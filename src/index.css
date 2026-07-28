@@ -1,11 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&family=Pretendard:wght@300;400;600&display=swap');
+
 :root {
-  --bg-color: #FAF9F6;
-  --secondary-bg: #F3F0E9;
-  --accent-color: #C5A059;
-  --text-primary: #2D2926;
-  --text-secondary: #6B665E;
-  --font-main: 'Noto Serif KR', serif;
-  --font-accent: 'Poppins', sans-serif;
+  --wedding-bg: #FDFBF7; /* 따뜻한 아이보리 톤 */
+  --wedding-text: #3E3A39;
+  --wedding-accent: #C8A97E; /* 로맨틱한 골드/베이지 */
+  --car-ui-bg: rgba(255, 255, 255, 0.85);
+  --car-border: #EAE6DF;
 }
 
 * {
@@ -15,34 +15,142 @@
 }
 
 body {
-  background-color: var(--bg-color);
-  color: var(--text-primary);
-  font-family: var(--font-main);
-  line-height: 1.6;
+  background-color: #EFEBE4;
+  color: var(--wedding-text);
+  font-family: 'Pretendard', sans-serif;
+  overflow-x: hidden;
   word-break: keep-all;
 }
 
-/* 모바일 화면 너비에 맞춘 컨테이너 */
-.mobile-container {
+.display-container {
   max-width: 480px;
   margin: 0 auto;
-  background-color: var(--bg-color);
+  background-color: var(--wedding-bg);
   min-height: 100vh;
-  box-shadow: 0 0 20px rgba(0,0,0,0.05);
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
 }
 
+/* 상단 상태 표시줄 (차량 감성 포인트) */
+.status-bar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  background: var(--car-ui-bg);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--car-border);
+  font-family: 'Pretendard', sans-serif;
+}
+
+.status-left { display: flex; align-items: baseline; gap: 4px; }
+.speed-num { font-size: 24px; font-weight: 700; }
+.speed-unit { font-size: 12px; color: #888; }
+
+.status-center { font-size: 20px; font-weight: 600; }
+.gear-active { color: var(--wedding-text); }
+.gear-inactive { color: #CCC; font-size: 16px; margin: 0 4px; }
+
+.status-right { font-size: 13px; color: var(--wedding-accent); font-weight: 600; }
+
+/* 공통 섹션 */
 .section {
-  padding: 60px 24px;
+  padding: 70px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
 }
 
-.section-title {
-  font-size: 20px;
-  font-weight: 400;
-  margin-bottom: 30px;
-  letter-spacing: 2px;
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--accent-color);
-  display: inline-block;
-  padding-bottom: 8px;
+/* 명조체 텍스트 (청첩장 감성) */
+.serif-title {
+  font-family: 'Nanum Myeongjo', serif;
+  font-size: 24px;
+  margin-bottom: 24px;
+  color: var(--wedding-text);
+}
+.serif-text {
+  font-family: 'Nanum Myeongjo', serif;
+  font-size: 15px;
+  line-height: 2;
+  color: #555;
+}
+
+/* 메인 이미지 래퍼 */
+.hero-wrapper {
+  width: 100%;
+  border-radius: 200px 200px 16px 16px; /* 아치형 디자인으로 웨딩 느낌 강조 */
+  overflow: hidden;
+  margin-bottom: 40px;
+  background-color: #F0EBE1;
+  height: 380px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+/* 갤러리 그리드 */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+.gallery-grid .photo:nth-child(1) {
+  grid-column: 1 / -1;
+  height: 280px;
+}
+.photo {
+  background-color: #EAE6DF;
+  height: 180px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #999;
+  font-size: 13px;
+}
+
+/* 내비게이션 UI (소프트하게 변경) */
+.navi-card {
+  width: 100%;
+  background: #FFF;
+  border-radius: 20px;
+  padding: 30px 24px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.04);
+  border: 1px solid var(--car-border);
+}
+
+/* 달력 UI */
+.calendar-widget {
+  width: 100%;
+  background: #FFF;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid var(--car-border);
+  margin-top: 24px;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  font-size: 14px;
+  margin-top: 16px;
+}
+.cal-day { color: #888; }
+.cal-date { color: #444; }
+.cal-highlight {
+  background-color: var(--wedding-accent);
+  color: #FFF;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
 }
