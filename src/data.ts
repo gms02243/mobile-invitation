@@ -11,8 +11,8 @@ export const weddingData = {
     bank: "신한은행",
     account: "987-654-3210",
   },
-  date: "2027-01-16T12:30:00",
-  dateDisplay: "2027년 1월 16일 토요일 낮 12시 30분",
+  date: "2027-01-16T14:00:00",
+  dateDisplay: "2027년 1월 16일 토요일, 오후 14시",
   location: {
     name: "아펠가모 선릉 4층",
     building: "한신인터밸리24빌딩",

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import './index.css';
 import { weddingData } from './data';
+import weddingCarImg from './assets/wedding-car.jpg';
 
 declare global {
   interface Window {
@@ -115,16 +116,20 @@ export default function App() {
   const scrollProgress = maxScroll > 0 ? Math.min(1, Math.max(0, scrollY / maxScroll)) : 0;
   const distance = Math.round(scrollProgress * 116);
 
+  // 메인 화면 스크롤 시 Fade Out 및 부드러운 패럴랙스 효과 계산
+  const heroOpacity = Math.max(0, 1 - scrollY / 320);
+  const heroTranslate = scrollY * 0.22;
+
   return (
     <div className="display-container">
       {/* 1. 인포테인먼트 상단 상태바 */}
       <header className="status-bar">
         <div className="status-left">
           <span className="speed-num">{distance}</span>
-          <span className="speed-unit">km</span>
+          <span className="speed-unit">km/h</span>
         </div>
         
-        {/* 기어 표시 영역 (P R N D) */}
+        {/* 기어 표시 영역 (P R N D - 간격 통일) */}
         <div className="status-center">
           <span className={gear === 'P' ? 'gear-active' : 'gear-inactive'}>P</span>
           <span className={gear === 'R' ? 'gear-active' : 'gear-inactive'}>R</span>
@@ -132,23 +137,37 @@ export default function App() {
           <span className={gear === 'D' ? 'gear-active' : 'gear-inactive'}>D</span>
         </div>
         
-        {/* 아이콘을 웨딩 반지(fa-ring)로 변경 */}
+        {/* 우상단 프로포즈링과 READY 일체감 있는 뱃지 레이아웃 */}
         <div className="status-right">
-          <i className="fa-solid fa-ring" style={{ marginRight: '6px' }}></i>
-          READY
+          <div className="ready-badge">
+            <span className="ring-icon-wrapper">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
+                <circle cx="12" cy="16" r="6" stroke="currentColor" strokeWidth="2.4" />
+                <path d="M7.5 7.5L10 4H14L16.5 7.5L12 11.5L7.5 7.5Z" fill="currentColor" stroke="currentColor" strokeLinejoin="round" />
+              </svg>
+            </span>
+            <span className="ready-label">READY</span>
+          </div>
         </div>
       </header>
 
       <main>
-        {/* 2. 메인 커버 섹션 */}
-        <section className="section">
+        {/* 2. 메인 커버 섹션 (스크롤 전 딱 맞는 100vh 반응형 & 스크롤 시 Fade Out) */}
+        <section 
+          className="section hero-section"
+          style={{ 
+            opacity: heroOpacity, 
+            transform: `translateY(${heroTranslate}px)`,
+            transition: 'opacity 0.05s linear, transform 0.05s linear' 
+          }}
+        >
           <div className="hero-wrapper">
-            <span style={{ color: '#888' }}>웨딩카 메인 이미지 (아치형 프레임)</span>
+            <img src={weddingCarImg} alt="빈티지 웨딩카 메인 아치" className="hero-img" />
           </div>
           <h1 className="serif-title" style={{ fontSize: '28px', marginBottom: '12px' }}>
             박재훈 <span style={{ color: 'var(--wedding-accent)', fontSize: '20px' }}>&</span> 박정은
           </h1>
-          <p style={{ fontSize: '15px', color: '#777', letterSpacing: '1px', lineHeight: '1.6' }}>
+          <p style={{ fontSize: '15px', color: '#777', letterSpacing: '1px', lineHeight: '1.6', marginBottom: 0 }}>
             {weddingData.dateDisplay}<br/>
             <strong style={{ color: '#555' }}>{weddingData.location.name}</strong>
           </p>
@@ -269,14 +288,16 @@ export default function App() {
               >
                 <i className="fa-solid fa-location-dot address-pin" style={{ color: 'var(--wedding-accent)' }}></i>
                 <span className="address-text">{weddingData.location.address}</span>
-                <span className="copy-icon-btn">
-                  {isCopied ? (
+                {isCopied ? (
+                  <span className="copied-inline">
                     <i className="fa-solid fa-check check-ani"></i>
-                  ) : (
+                    <span>복사완료!</span>
+                  </span>
+                ) : (
+                  <span className="copy-icon-btn">
                     <i className="fa-regular fa-copy"></i>
-                  )}
-                </span>
-                {isCopied && <span className="copied-toast">복사완료!</span>}
+                  </span>
+                )}
               </div>
             </div>
 

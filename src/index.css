@@ -20,6 +20,8 @@ body {
   font-family: 'Pretendard', sans-serif;
   overflow-x: hidden;
   word-break: keep-all;
+  touch-action: pan-y; /* 모바일에서 핀치 줌 방지 및 스크롤만 허용 */
+  -webkit-text-size-adjust: 100%;
 }
 
 .display-container {
@@ -46,15 +48,74 @@ body {
   font-family: 'Pretendard', sans-serif;
 }
 
-.status-left { display: flex; align-items: baseline; gap: 4px; }
-.speed-num { font-size: 24px; font-weight: 700; }
+.status-left { 
+  flex: 1; 
+  display: flex; 
+  align-items: baseline; 
+  justify-content: flex-start;
+  gap: 4px; 
+}
+.speed-num { 
+  font-size: 24px; 
+  font-weight: 700; 
+  width: 45px; /* 최대 숫자 116까지 가로 영역 완벽 확보 */
+  text-align: right;
+  font-variant-numeric: tabular-nums; /* 자릿수에 따른 글자폭 변동 방지 */
+  display: inline-block;
+}
 .speed-unit { font-size: 12px; color: #888; }
 
-.status-center { font-size: 20px; font-weight: 600; }
-.gear-active { color: var(--wedding-text); }
-.gear-inactive { color: #CCC; font-size: 16px; margin: 0 4px; }
+.status-center { 
+  flex: 0 0 auto; /* 정확한 헤더 정중앙 위치 고정 (숫자 변화에 흔들림 없음) */
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  gap: 16px; 
+  font-weight: 700; 
+}
+.gear-active { 
+  color: var(--wedding-text); 
+  font-size: 18px; 
+  width: 20px; 
+  text-align: center; 
+  display: inline-block; 
+}
+.gear-inactive { 
+  color: #D3CEC6; 
+  font-size: 16px; 
+  width: 20px; 
+  text-align: center; 
+  display: inline-block; 
+}
 
-.status-right { font-size: 13px; color: var(--wedding-accent); font-weight: 600; }
+.status-right { 
+  flex: 1; 
+  display: flex; 
+  align-items: center; 
+  justify-content: flex-end;
+}
+.ready-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background-color: rgba(200, 169, 126, 0.14); /* 로맨틱 골드빛 상태 뱃지 */
+  border: 1px solid rgba(200, 169, 126, 0.3);
+  border-radius: 14px;
+  color: var(--wedding-accent);
+  box-shadow: 0 2px 6px rgba(200, 169, 126, 0.08);
+}
+.ring-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(-1px); /* 텍스트 베이스라인과 균형 일치 */
+}
+.ready-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+}
 
 /* 공통 섹션 */
 .section {
@@ -79,18 +140,42 @@ body {
   color: #555;
 }
 
-/* 메인 이미지 래퍼 */
-.hero-wrapper {
+/* 메인 화면 뷰포트 반응형 섹션 (스크롤 전 딱 맞게 떨어짐) */
+.hero-section {
   width: 100%;
-  border-radius: 200px 200px 16px 16px; /* 아치형 디자인으로 웨딩 느낌 강조 */
+  height: calc(100vh - 56px); /* 상단 상태바 제외 정확한 한 화면 길이 */
+  min-height: 560px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 24px 30px;
+  position: relative;
   overflow: hidden;
-  margin-bottom: 40px;
+  box-sizing: border-box;
+}
+
+/* 메인 이미지 래퍼 (정밀한 반원 아치 구조 & 꾸겨짐 없앰) */
+.hero-wrapper {
+  width: 280px;
+  height: 360px;
+  margin: 0 auto 28px;
+  border-radius: 140px 140px 14px 14px; /* 폭 280px 기준 정확히 반원 아치(140px) 형성 */
+  overflow: hidden;
   background-color: #F0EBE1;
-  height: 380px;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.08);
+  border: 4px solid #FFFFFF;
+}
+
+.hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 /* 갤러리 그리드 */
@@ -229,19 +314,19 @@ body {
   color: var(--wedding-text);
   transform: scale(1.1);
 }
+.copied-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px; /* 체크표시 바로 옆에 여분 패딩/띄어쓰기 없이 밀착 */
+  color: #4CAF50;
+  font-weight: 700;
+  font-size: 13px;
+  animation: fadeIn 0.2s;
+}
 .check-ani {
   color: #4CAF50;
+  font-size: 15px;
   animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.copied-toast {
-  font-size: 11px;
-  color: #4CAF50;
-  background-color: #E8F5E9;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 10px;
-  margin-left: 2px;
-  animation: fadeIn 0.2s;
 }
 
 @keyframes popIn {
