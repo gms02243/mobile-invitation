@@ -115,42 +115,326 @@ body {
   font-size: 13px;
 }
 
-/* 내비게이션 UI (소프트하게 변경) */
+/* 내비게이션 UI (소프트하고 정밀한 차량 내비 콘셉트) */
 .navi-card {
   width: 100%;
   background: #FFF;
-  border-radius: 20px;
-  padding: 30px 24px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.04);
+  border-radius: 22px;
+  padding: 28px 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
   border: 1px solid var(--car-border);
+}
+
+.navi-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 16px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid var(--car-border);
+}
+.navi-pulse-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(200, 169, 126, 0.18);
+  color: var(--wedding-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+.navi-status-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.navi-subtext {
+  font-size: 11px;
+  color: #888;
+  letter-spacing: 1px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.navi-main-text {
+  font-size: 17px;
+  color: var(--wedding-text);
+  font-weight: 700;
+}
+.navi-badge {
+  background: var(--wedding-text);
+  color: #FFF;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+
+/* 목적지 정보 (블록 및 테두리 없이 깔끔하게) */
+.navi-dest-info {
+  padding: 4px 0 20px 0;
+}
+.dest-title {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.dest-main-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--wedding-text);
+  letter-spacing: -0.5px;
+}
+.dest-building {
+  font-size: 14px;
+  color: #888;
+  font-weight: 500;
+}
+.address-copy-row {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  cursor: pointer;
+  padding: 6px 8px;
+  margin-left: -8px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+.address-copy-row:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+.address-pin {
+  font-size: 15px;
+}
+.address-text {
+  font-size: 14px;
+  color: #555;
+  font-weight: 500;
+  word-break: keep-all;
+}
+.copy-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 15px;
+  margin-left: 2px;
+  transition: transform 0.2s;
+}
+.address-copy-row:hover .copy-icon-btn {
+  color: var(--wedding-text);
+  transform: scale(1.1);
+}
+.check-ani {
+  color: #4CAF50;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.copied-toast {
+  font-size: 11px;
+  color: #4CAF50;
+  background-color: #E8F5E9;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  margin-left: 2px;
+  animation: fadeIn 0.2s;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* 지도 영역 */
+.navi-map-wrapper {
+  margin-bottom: 26px;
+}
+.map-view {
+  width: 100%;
+  height: 280px;
+  background-color: #ECE8DF;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--car-border);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.map-fallback {
+  width: 90%;
+  background: rgba(255, 255, 255, 0.96);
+  padding: 24px 20px;
+  border-radius: 14px;
+  text-align: center;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+  border: 1px solid #E5DFD4;
+}
+.fallback-icon {
+  font-size: 28px;
+  color: var(--wedding-accent);
+  margin-bottom: 8px;
+}
+.map-fallback strong {
+  display: block;
+  font-size: 16px;
+  color: var(--wedding-text);
+  margin-bottom: 8px;
+}
+.map-fallback p {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 0;
+}
+.map-fallback code {
+  color: #C8A97E;
+  background: #F4EFE6;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* 교통 상세 안내 리스트 */
+.transport-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-top: 1px dashed var(--car-border);
+  padding-top: 22px;
+}
+.transport-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.transport-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.transport-content {
+  flex: 1;
+}
+.transport-content strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+.transport-content p {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+  word-break: keep-all;
 }
 
 /* 달력 UI */
 .calendar-widget {
   width: 100%;
   background: #FFF;
-  border-radius: 16px;
-  padding: 24px;
+  border-radius: 20px;
+  padding: 28px 22px;
   border: 1px solid var(--car-border);
-  margin-top: 24px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.03);
+  margin-top: 12px;
 }
+
+/* 캘린더 고급 헤더 스타일 */
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 18px;
+  margin-bottom: 16px;
+  border-bottom: 1px dashed #EAE6DF;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.cal-title-left {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.cal-year {
+  font-size: 14px;
+  color: #888;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+.cal-month {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--wedding-text);
+  font-family: 'Nanum Myeongjo', serif;
+}
+.cal-month-eng {
+  font-size: 12px;
+  color: var(--wedding-accent);
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-left: 2px;
+}
+.cal-date-badge {
+  background-color: #F8F6F0;
+  color: #6D5B41;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid #EAE1D3;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+}
+
+/* 간격이 일정하도록 정밀 조정된 캘린더 그리드 */
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 10px;
-  font-size: 14px;
-  margin-top: 16px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  row-gap: 6px;
+  column-gap: 0;
+  font-size: 15px;
+  width: 100%;
 }
-.cal-day { color: #888; }
-.cal-date { color: #444; }
+.cal-day {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+.cal-date {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.cal-date.empty-cell {
+  pointer-events: none;
+}
 .cal-highlight {
   background-color: var(--wedding-accent);
   color: #FFF;
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(200, 169, 126, 0.45);
 }
