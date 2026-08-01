@@ -542,7 +542,6 @@ export default function App() {
                 onClick={() => {
                   navigator.share({
                     title: '[결혼합니다] 박재훈 ♥ 박정은',
-                    text: '2027년 1월 16일 토요일 오후 14:00, 아펠가모 선릉\n소중한 분들을 초대합니다.',
                     url: window.location.href,
                   }).catch(() => {});
                 }}

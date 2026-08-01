@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800">
+  <defs>
+    <!-- 실키 종이 질감 느낌의 고급 아이보리 화이트 배경 -->
+    <linearGradient id="paper-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FCFBF9"/>
+      <stop offset="100%" stop-color="#F6F2E8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 바탕 캔버스 (1:1 800x800 카카오톡 최적화 규격) -->
+  <rect width="800" height="800" fill="url(#paper-bg)"/>
+
+  <!-- 메신저에서 어떤 형태로 잘려도 시야를 안 차지하는 안전 마진 싱글 보더 -->
+  <rect x="50" y="50" width="700" height="700" fill="none" stroke="#DCD5C8" stroke-width="1.2" rx="6" ry="6"/>
+
+  <!-- 상단 헤더 -->
+  <text x="400" y="180" font-family="'Times New Roman', 'Noto Serif KR', 'AppleMyungjo', serif" font-size="16" font-weight="400" fill="#90877D" letter-spacing="7" text-anchor="middle">
+    WEDDING INVITATION
+  </text>
+
+  <!-- 메인 성함 & 강렬한 RED 하트 포인트 ❤️ -->
+  <text x="400" y="320" font-family="'Nanum Myeongjo', 'AppleMyungjo', 'Noto Serif KR', serif" font-size="72" font-weight="700" fill="#242220" letter-spacing="12" text-anchor="middle">
+    박재훈 <tspan fill="#E12A30" font-size="52" dy="-5" dx="6">♥</tspan><tspan dy="5" dx="18">박정은</tspan>
+  </text>
+
+  <!-- 초대 서브 문구 -->
+  <text x="400" y="440" font-family="'Nanum Myeongjo', 'AppleMyungjo', 'Noto Serif KR', serif" font-size="36" font-weight="400" fill="#48433E" letter-spacing="6" text-anchor="middle">
+    저희 두 사람, 결혼합니다
+  </text>
+
+  <!-- 에디토리얼 미니멀 디바이더 -->
+  <line x1="360" y1="520" x2="440" y2="520" stroke="#D0C8B8" stroke-width="1.2"/>
+
+  <!-- 일시 및 장소 (좌우가 짤리지 않는 2줄 정렬 구조) -->
+  <text x="400" y="600" font-family="'Apple SD Gothic Neo', 'Pretendard', sans-serif" font-size="26" font-weight="600" fill="#423E3B" letter-spacing="2" text-anchor="middle">
+    2027년 1월 16일 (토) 오후 14:00
+  </text>
+  <text x="400" y="650" font-family="'Apple SD Gothic Neo', 'Pretendard', sans-serif" font-size="25" font-weight="600" fill="#5E5852" letter-spacing="2" text-anchor="middle">
+    아펠가모 선릉 4층 (한신인터밸리24)
+  </text>
+</svg>
