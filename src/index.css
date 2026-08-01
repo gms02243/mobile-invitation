@@ -243,7 +243,7 @@ body {
   transform: scale(1.06);
 }
 
-/* 갤러리 라이트박스 모달 (iOS Safari 풀스크린 및 스크롤 원천 차단 대응) */
+/* 갤러리 라이트박스 모달 (화면 꽉 차는 100% 풀스크린 & 옆 사진 미리보기 슬라이드 트랙 뷰어) */
 .lightbox-overlay {
   position: fixed;
   top: 0;
@@ -254,12 +254,13 @@ body {
   height: 100%;
   min-height: 100vh;
   min-height: -webkit-fill-available;
-  background-color: #0a0a0d;
+  background-color: #050507;
   z-index: 999999;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 16px;
+  overflow: hidden;
   animation: fadeIn 0.2s ease-out;
   touch-action: none;
 }
@@ -269,78 +270,114 @@ body {
   to { opacity: 1; }
 }
 
-.lightbox-content {
+.lightbox-slider-viewport {
   position: relative;
-  max-width: 520px;
   width: 100%;
+  height: 100%;
+  overflow: hidden;
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  cursor: grab;
+}
+.lightbox-slider-viewport:active {
+  cursor: grabbing;
+}
+
+.lightbox-slider-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+}
+
+.lightbox-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0;
 }
 
 .lightbox-img {
   max-width: 100%;
-  max-height: 72vh;
+  max-height: 100%;
+  width: auto;
+  height: auto;
   object-fit: contain;
-  border-radius: 12px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   user-select: none;
   -webkit-user-select: none;
-  touch-action: pan-y;
-  cursor: grab;
-}
-.lightbox-img:active {
-  cursor: grabbing;
+  pointer-events: none;
 }
 
 .lightbox-close-btn {
   position: absolute;
-  top: -45px;
-  right: 6px;
-  background: none;
-  border: none;
+  top: 24px;
+  right: 20px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: rgba(30, 30, 35, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   color: #FFF;
-  font-size: 28px;
+  font-size: 24px;
   cursor: pointer;
-  padding: 4px 8px;
-  opacity: 0.85;
-  transition: opacity 0.2s;
-}
-.lightbox-close-btn:hover, .lightbox-close-btn:active {
-  opacity: 1;
-}
-
-.lightbox-nav-bar {
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 36px;
-  margin-top: 18px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform 0.2s, background 0.2s;
 }
+.lightbox-close-btn:active {
+  transform: scale(0.92);
+  background: rgba(60, 60, 70, 0.9);
+}
+
+.lightbox-nav-bar {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  background: rgba(20, 20, 25, 0.75);
+  padding: 10px 24px;
+  border-radius: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
 .lightbox-nav-btn {
   background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.25);
+  border: none;
   color: #FFF;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
   transition: background 0.2s, transform 0.2s;
 }
 .lightbox-nav-btn:active {
   background: rgba(255, 255, 255, 0.35);
-  transform: scale(0.95);
+  transform: scale(0.92);
 }
+
 .lightbox-counter {
   color: #FFF;
   font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 2px;
+  font-weight: 700;
+  letter-spacing: 3px;
 }
 
 /* 내비게이션 UI (소프트하고 정밀한 차량 내비 콘셉트) */

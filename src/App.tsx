@@ -24,20 +24,36 @@ export default function App() {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const touchStartXRef = useRef<number | null>(null);
   const touchEndXRef = useRef<number | null>(null);
+  const sliderTrackRef = useRef<HTMLDivElement | null>(null);
 
   const galleryPhotos = Array.from({ length: 8 }, (_, i) => `${import.meta.env.BASE_URL}pic/${i + 1}.jpg`);
 
+  const handleSwipeMove = (currentX: number) => {
+    touchEndXRef.current = currentX;
+    if (touchStartXRef.current !== null && sliderTrackRef.current && selectedPhoto !== null) {
+      const diff = currentX - touchStartXRef.current;
+      sliderTrackRef.current.style.transform = `translate3d(calc(-${selectedPhoto * 100}% + ${diff}px), 0, 0)`;
+      sliderTrackRef.current.style.transition = 'none';
+    }
+  };
+
   const handleSwipeEnd = () => {
-    if (touchStartXRef.current !== null && touchEndXRef.current !== null) {
+    if (touchStartXRef.current !== null && touchEndXRef.current !== null && selectedPhoto !== null) {
       const distance = touchStartXRef.current - touchEndXRef.current;
-      const minSwipeDistance = 35; // 35px 이상 손가락이나 마우스로 슬라이드 시 다음/이전 전환
+      const minSwipeDistance = 40; // 40px 이상 슬라이드 시 사진 전환
       if (Math.abs(distance) > minSwipeDistance) {
         if (distance > 0) {
           setSelectedPhoto((prev) => (prev !== null ? (prev + 1) % galleryPhotos.length : null));
         } else {
           setSelectedPhoto((prev) => (prev !== null ? (prev - 1 + galleryPhotos.length) % galleryPhotos.length : null));
         }
+      } else if (sliderTrackRef.current) {
+        sliderTrackRef.current.style.transform = `translate3d(-${selectedPhoto * 100}%, 0, 0)`;
+        sliderTrackRef.current.style.transition = 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
       }
+    } else if (sliderTrackRef.current && selectedPhoto !== null) {
+      sliderTrackRef.current.style.transform = `translate3d(-${selectedPhoto * 100}%, 0, 0)`;
+      sliderTrackRef.current.style.transition = 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
     }
     touchStartXRef.current = null;
     touchEndXRef.current = null;
@@ -624,21 +640,31 @@ export default function App() {
       </main>
       </div>
 
-      {/* 사진 크게 보기 모달 (라이트박스 뷰어 - iOS Safari 완벽 대응 및 최상위 DOM 분리) */}
+      {/* 사진 크게 보기 모달 (100% 화면 꽉차는 풀스크린 & 옆 사진 실시간 미리보기 슬라이드 트랙) */}
       {selectedPhoto !== null && (
         <div 
           className="lightbox-overlay" 
           onClick={() => setSelectedPhoto(null)}
         >
+          {/* 우상단 독립 닫기 버튼 */}
+          <button 
+            className="lightbox-close-btn"
+            onClick={() => setSelectedPhoto(null)}
+            aria-label="닫기"
+          >
+            <i className="fa-solid fa-xmark"></i>
+          </button>
+
+          {/* 화면 전체를 품는 슬라이더 뷰포트 영역 */}
           <div 
-            className="lightbox-content" 
+            className="lightbox-slider-viewport"
             onClick={(e) => e.stopPropagation()}
             onTouchStart={(e) => {
               touchStartXRef.current = e.targetTouches[0].clientX;
               touchEndXRef.current = null;
             }}
             onTouchMove={(e) => {
-              touchEndXRef.current = e.targetTouches[0].clientX;
+              handleSwipeMove(e.targetTouches[0].clientX);
             }}
             onTouchEnd={handleSwipeEnd}
             onMouseDown={(e) => {
@@ -647,30 +673,40 @@ export default function App() {
             }}
             onMouseMove={(e) => {
               if (touchStartXRef.current !== null) {
-                touchEndXRef.current = e.clientX;
+                handleSwipeMove(e.clientX);
               }
             }}
             onMouseUp={handleSwipeEnd}
             onMouseLeave={() => {
               touchStartXRef.current = null;
               touchEndXRef.current = null;
+              if (sliderTrackRef.current && selectedPhoto !== null) {
+                sliderTrackRef.current.style.transform = `translate3d(-${selectedPhoto * 100}%, 0, 0)`;
+                sliderTrackRef.current.style.transition = 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
+              }
             }}
           >
-            <button 
-              className="lightbox-close-btn"
-              onClick={() => setSelectedPhoto(null)}
-              aria-label="닫기"
+            <div 
+              ref={sliderTrackRef}
+              className="lightbox-slider-track"
+              style={{
+                transform: `translate3d(-${selectedPhoto * 100}%, 0, 0)`,
+                transition: 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)'
+              }}
             >
-              <i className="fa-solid fa-xmark"></i>
-            </button>
-            
-            <img 
-              src={galleryPhotos[selectedPhoto]} 
-              alt={`웨딩 사진 ${selectedPhoto + 1}`} 
-              className="lightbox-img"
-            />
+              {galleryPhotos.map((photoSrc, idx) => (
+                <div key={idx} className="lightbox-slide">
+                  <img 
+                    src={photoSrc} 
+                    alt={`웨딩 사진 ${idx + 1}`} 
+                    className="lightbox-img"
+                  />
+                </div>
+              ))}
+            </div>
 
-            <div className="lightbox-nav-bar">
+            {/* 하단 내비게이션 캡슐 바 */}
+            <div className="lightbox-nav-bar" onClick={(e) => e.stopPropagation()}>
               <button 
                 className="lightbox-nav-btn"
                 onClick={() => setSelectedPhoto((selectedPhoto - 1 + galleryPhotos.length) % galleryPhotos.length)}
