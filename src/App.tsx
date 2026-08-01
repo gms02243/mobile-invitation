@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import './index.css';
 import { weddingData } from './data';
-import weddingCarImg from './assets/wedding-car.jpg';
+import weddingMainImg from './assets/main.jpg';
 
 declare global {
   interface Window {
@@ -195,7 +195,7 @@ export default function App() {
           }}
         >
           <div className="hero-wrapper">
-            <img src={weddingCarImg} alt="빈티지 웨딩카 메인 아치" className="hero-img" />
+            <img src={weddingMainImg} className="hero-img" />
           </div>
           
           <h1 className="serif-title" style={{ fontSize: '27px', marginBottom: '20px' }}>
@@ -206,12 +206,12 @@ export default function App() {
           <div style={{ fontFamily: "'Nanum Myeongjo', serif", fontSize: '14px', color: '#555', marginBottom: '26px', textAlign: 'center' }}>
             <div style={{ marginBottom: '9px' }}>
               <span style={{ color: '#666' }}>박헌기 · 최미애</span>
-              <span style={{ fontSize: '13px', color: '#888', margin: '0 6px' }}>의 아들</span>
+              <span style={{ fontSize: '13px', color: '#888', margin: '0 6px' }}>의 장남</span>
               <strong style={{ color: 'var(--wedding-text)', fontWeight: '700' }}>재훈</strong>
             </div>
             <div>
               <span style={{ color: '#666' }}>박남규 · 김현숙</span>
-              <span style={{ fontSize: '13px', color: '#888', margin: '0 6px' }}>의 딸</span>
+              <span style={{ fontSize: '13px', color: '#888', margin: '0 6px' }}>의 차녀</span>
               <strong style={{ color: 'var(--wedding-text)', fontWeight: '700' }}>정은</strong>
             </div>
           </div>
