@@ -74,7 +74,7 @@ export default function App() {
   
   // 이전 스크롤 위치와 타이머를 저장하기 위한 useRef
   const lastScrollY = useRef(0);
-  const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+  const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
