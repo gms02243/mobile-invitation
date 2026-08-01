@@ -73,16 +73,21 @@ export default function App() {
     }
   }, []);
   
-  // 이전 스크롤 위치와 타이머를 저장하기 위한 useRef
+  // 이전 스크롤 위치와 N/P 기어 전환 타이머를 저장하기 위한 useRef
   const lastScrollY = useRef(0);
   const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const parkTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScroll = window.scrollY;
       setScrollY(currentScroll);
 
-      // 1. 스크롤 방향 감지하여 R 또는 D로 변경
+      // 스크롤 발생 시 진행 중인 중립(N) 및 파킹(P) 대기 타이머 초기화
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+      if (parkTimeout.current) clearTimeout(parkTimeout.current);
+
+      // 1. 스크롤 방향 감지하여 R 또는 D로 즉시 변경
       if (currentScroll > lastScrollY.current) {
         setGear('D'); // 화면을 내리면 Drive
       } else if (currentScroll < lastScrollY.current) {
@@ -91,21 +96,22 @@ export default function App() {
       
       lastScrollY.current = currentScroll;
 
-      // 2. 스크롤 멈춤 감지 (150ms 동안 추가 스크롤이 없으면 P로 변경)
-      if (scrollTimeout.current) {
-        clearTimeout(scrollTimeout.current);
-      }
+      // 2. 스크롤 멈춤 감지: 150ms 동안 추가 스크롤이 없으면 우선 N(중립)으로 변경
       scrollTimeout.current = setTimeout(() => {
-        setGear('P');
+        setGear('N');
+
+        // 3. N 상태 유지 2초(2000ms) 동안 움직임이 없으면 P(파킹)로 자동 변속
+        parkTimeout.current = setTimeout(() => {
+          setGear('P');
+        }, 2000);
       }, 150);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      if (scrollTimeout.current) {
-        clearTimeout(scrollTimeout.current);
-      }
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+      if (parkTimeout.current) clearTimeout(parkTimeout.current);
     };
   }, []);
 
@@ -116,9 +122,10 @@ export default function App() {
   const scrollProgress = maxScroll > 0 ? Math.min(1, Math.max(0, scrollY / maxScroll)) : 0;
   const distance = Math.round(scrollProgress * 116);
 
-  // 메인 화면 스크롤 시 Fade Out 및 부드러운 패럴랙스 효과 계산
-  const heroOpacity = Math.max(0, 1 - scrollY / 320);
-  const heroTranslate = scrollY * 0.22;
+  // iOS 바운스(음수 스크롤) 팽창/떨림 방지를 위해 0 이상으로 클램핑
+  const clampedScrollY = Math.max(0, scrollY);
+  const heroOpacity = Math.max(0, 1 - clampedScrollY / 320);
+  const heroTranslate = clampedScrollY * 0.22;
 
   return (
     <div className="display-container">
@@ -126,12 +133,12 @@ export default function App() {
       <header className="status-bar">
         <div className="status-left">
           <span className="speed-num">{distance}</span>
-          <span className="speed-unit">km/h</span>
+          <span className="speed-unit">km</span>
         </div>
         
-        {/* 기어 표시 영역 (P R N D - 간격 통일) */}
+        {/* 기어 표시 영역 (P R N D - P 파킹 시 강렬한 레드 하이라이트) */}
         <div className="status-center">
-          <span className={gear === 'P' ? 'gear-active' : 'gear-inactive'}>P</span>
+          <span className={gear === 'P' ? 'gear-active gear-p-active' : 'gear-inactive'}>P</span>
           <span className={gear === 'R' ? 'gear-active' : 'gear-inactive'}>R</span>
           <span className={gear === 'N' ? 'gear-active' : 'gear-inactive'}>N</span>
           <span className={gear === 'D' ? 'gear-active' : 'gear-inactive'}>D</span>
@@ -157,8 +164,9 @@ export default function App() {
           className="section hero-section"
           style={{ 
             opacity: heroOpacity, 
-            transform: `translateY(${heroTranslate}px)`,
-            transition: 'opacity 0.05s linear, transform 0.05s linear' 
+            transform: `translate3d(0, ${heroTranslate}px, 0)`,
+            transition: 'none',
+            willChange: 'transform, opacity'
           }}
         >
           <div className="hero-wrapper">

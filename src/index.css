@@ -14,30 +14,43 @@
   padding: 0;
 }
 
-body {
+html, body {
   background-color: #EFEBE4;
   color: var(--wedding-text);
   font-family: 'Pretendard', sans-serif;
-  overflow-x: hidden;
   word-break: keep-all;
   touch-action: pan-y; /* 모바일에서 핀치 줌 방지 및 스크롤만 허용 */
   -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none; /* 아이폰 Safari 당겨서 새로고침 및 상하 바운스 진동 완화 */
+  -webkit-overflow-scrolling: touch;
+}
+
+body {
+  overflow-x: auto; /* 화면 폭이 최소 레이아웃 이하로 줄어들면 깨지는 대신 스크롤 생성 */
 }
 
 .display-container {
+  min-width: 320px; /* 극단적 스케일 다운에도 모바일 레이아웃 안깨지도록 최소 폭 확보 */
   max-width: 480px;
   margin: 0 auto;
   background-color: var(--wedding-bg);
   min-height: 100vh;
   position: relative;
   box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  overflow: hidden; /* 컨테이너 외부 돌출 방지 */
+  padding-top: 58px; /* fixed로 고정된 상단바 높이만큼 공간 완충 */
 }
 
 /* 상단 상태 표시줄 (차량 감성 포인트) */
 .status-bar {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 100;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 480px;
+  min-width: 320px;
+  z-index: 999;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -46,6 +59,7 @@ body {
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--car-border);
   font-family: 'Pretendard', sans-serif;
+  box-sizing: border-box;
 }
 
 .status-left { 
@@ -79,6 +93,12 @@ body {
   width: 20px; 
   text-align: center; 
   display: inline-block; 
+  transition: color 0.25s, transform 0.2s;
+}
+.gear-p-active {
+  color: #E53935; /* 차량 P 기어 특유의 강렬하고 눈에 띄는 레드 컬러 */
+  text-shadow: 0 0 10px rgba(229, 57, 53, 0.3); /* 은은한 기계식 LED 발광 효과 */
+  transform: scale(1.1);
 }
 .gear-inactive { 
   color: #D3CEC6; 
@@ -86,6 +106,7 @@ body {
   width: 20px; 
   text-align: center; 
   display: inline-block; 
+  transition: color 0.25s;
 }
 
 .status-right { 
