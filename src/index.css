@@ -211,24 +211,128 @@ body {
   display: block;
 }
 
-/* 갤러리 그리드 (가로형 메인 없이 4개의 균형 잡힌 2x2 정렬) */
+/* 갤러리 그리드 (4x2 총 8컷 모던 갤러리 레이아웃) */
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 14px;
   width: 100%;
 }
-.photo {
+.photo-item {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
   background-color: #EAE6DF;
-  height: 220px;
-  border-radius: 14px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.photo-item:active, .photo-item:hover {
+  transform: scale(0.97);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.09);
+}
+.photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.5s ease;
+}
+.photo-item:hover .photo-img {
+  transform: scale(1.05);
+}
+
+/* 갤러리 라이트박스 모달 (사진 확대 및 좌우 슬라이드 뷰어) */
+.lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(12, 12, 15, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10000;
   display: flex;
   justify-content: center;
   align-items: center;
-  color: #999;
-  font-size: 14px;
-  font-weight: 500;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.lightbox-content {
+  position: relative;
+  max-width: 520px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.lightbox-img {
+  max-width: 100%;
+  max-height: 72vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.lightbox-close-btn {
+  position: absolute;
+  top: -45px;
+  right: 6px;
+  background: none;
+  border: none;
+  color: #FFF;
+  font-size: 28px;
+  cursor: pointer;
+  padding: 4px 8px;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+}
+.lightbox-close-btn:hover, .lightbox-close-btn:active {
+  opacity: 1;
+}
+
+.lightbox-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+  margin-top: 18px;
+}
+.lightbox-nav-btn {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #FFF;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.lightbox-nav-btn:active {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(0.95);
+}
+.lightbox-counter {
+  color: #FFF;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 2px;
 }
 
 /* 내비게이션 UI (소프트하고 정밀한 차량 내비 콘셉트) */

@@ -20,7 +20,10 @@ export default function App() {
   const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
   const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
   const [isLinkCopied, setIsLinkCopied] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const galleryPhotos = Array.from({ length: 8 }, (_, i) => `${import.meta.env.BASE_URL}pic/${i + 1}.jpg`);
 
   useEffect(() => {
     const initMap = () => {
@@ -312,14 +315,24 @@ export default function App() {
           </div>
         </section>
 
-        {/* 5. 웨딩 갤러리 (가로형 메인 없이 총 4개의 웨딩 사진 배치) */}
+        {/* 5. 웨딩 갤러리 (우리의 순간들 - 8컷 스튜디오 로고 및 라이트박스 갤러리) */}
         <section className="section" style={{ backgroundColor: '#F8F6F0' }}>
           <h2 className="serif-title">우리의 순간들</h2>
           <div className="gallery-grid">
-            <div className="photo">웨딩 사진 1</div>
-            <div className="photo">웨딩 사진 2</div>
-            <div className="photo">웨딩 사진 3</div>
-            <div className="photo">웨딩 사진 4</div>
+            {galleryPhotos.map((photoSrc, idx) => (
+              <div 
+                key={idx} 
+                className="photo-item"
+                onClick={() => setSelectedPhoto(idx)}
+              >
+                <img 
+                  src={photoSrc} 
+                  alt={`웨딩 사진 ${idx + 1}`} 
+                  className="photo-img"
+                  loading="lazy"
+                />
+              </div>
+            ))}
           </div>
         </section>
 
@@ -573,6 +586,53 @@ export default function App() {
             </button>
           </div>
         </section>
+
+        {/* 사진 크게 보기 모달 (라이트박스 뷰어) */}
+        {selectedPhoto !== null && (
+          <div 
+            className="lightbox-overlay" 
+            onClick={() => setSelectedPhoto(null)}
+          >
+            <div 
+              className="lightbox-content" 
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button 
+                className="lightbox-close-btn"
+                onClick={() => setSelectedPhoto(null)}
+                aria-label="닫기"
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+              
+              <img 
+                src={galleryPhotos[selectedPhoto]} 
+                alt={`웨딩 사진 ${selectedPhoto + 1}`} 
+                className="lightbox-img"
+              />
+
+              <div className="lightbox-nav-bar">
+                <button 
+                  className="lightbox-nav-btn"
+                  onClick={() => setSelectedPhoto((selectedPhoto - 1 + galleryPhotos.length) % galleryPhotos.length)}
+                  aria-label="이전 사진"
+                >
+                  <i className="fa-solid fa-chevron-left"></i>
+                </button>
+                <span className="lightbox-counter">
+                  {selectedPhoto + 1} / {galleryPhotos.length}
+                </span>
+                <button 
+                  className="lightbox-nav-btn"
+                  onClick={() => setSelectedPhoto((selectedPhoto + 1) % galleryPhotos.length)}
+                  aria-label="다음 사진"
+                >
+                  <i className="fa-solid fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
