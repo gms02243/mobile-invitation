@@ -32,6 +32,7 @@ export default function App() {
     touchEndXRef.current = currentX;
     if (touchStartXRef.current !== null && sliderTrackRef.current && selectedPhoto !== null) {
       const diff = currentX - touchStartXRef.current;
+      // 손가락 이동에 맞춰 옆 사진이 실시간으로 따라오는 1:1 반응형 물리 슬라이더
       sliderTrackRef.current.style.transform = `translate3d(calc(-${selectedPhoto * 100}% + ${diff}px), 0, 0)`;
       sliderTrackRef.current.style.transition = 'none';
     }
@@ -40,7 +41,11 @@ export default function App() {
   const handleSwipeEnd = () => {
     if (touchStartXRef.current !== null && touchEndXRef.current !== null && selectedPhoto !== null) {
       const distance = touchStartXRef.current - touchEndXRef.current;
-      const minSwipeDistance = 40; // 40px 이상 슬라이드 시 사진 전환
+      const minSwipeDistance = 25; // 25px 이상 스와이프 시 부드러운 관성 애니메이션 발동
+      if (sliderTrackRef.current) {
+        // 미끄러지듯 자연스럽게 착지하는 고급 관성 물리 감속 곡선 적용
+        sliderTrackRef.current.style.transition = 'transform 0.55s cubic-bezier(0.16, 1, 0.3, 1)';
+      }
       if (Math.abs(distance) > minSwipeDistance) {
         if (distance > 0) {
           setSelectedPhoto((prev) => (prev !== null ? (prev + 1) % galleryPhotos.length : null));
@@ -49,11 +54,10 @@ export default function App() {
         }
       } else if (sliderTrackRef.current) {
         sliderTrackRef.current.style.transform = `translate3d(-${selectedPhoto * 100}%, 0, 0)`;
-        sliderTrackRef.current.style.transition = 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
       }
     } else if (sliderTrackRef.current && selectedPhoto !== null) {
       sliderTrackRef.current.style.transform = `translate3d(-${selectedPhoto * 100}%, 0, 0)`;
-      sliderTrackRef.current.style.transition = 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
+      sliderTrackRef.current.style.transition = 'transform 0.55s cubic-bezier(0.16, 1, 0.3, 1)';
     }
     touchStartXRef.current = null;
     touchEndXRef.current = null;
@@ -662,6 +666,9 @@ export default function App() {
             onTouchStart={(e) => {
               touchStartXRef.current = e.targetTouches[0].clientX;
               touchEndXRef.current = null;
+              if (sliderTrackRef.current) {
+                sliderTrackRef.current.style.transition = 'none';
+              }
             }}
             onTouchMove={(e) => {
               handleSwipeMove(e.targetTouches[0].clientX);
@@ -670,6 +677,9 @@ export default function App() {
             onMouseDown={(e) => {
               touchStartXRef.current = e.clientX;
               touchEndXRef.current = null;
+              if (sliderTrackRef.current) {
+                sliderTrackRef.current.style.transition = 'none';
+              }
             }}
             onMouseMove={(e) => {
               if (touchStartXRef.current !== null) {
@@ -682,7 +692,7 @@ export default function App() {
               touchEndXRef.current = null;
               if (sliderTrackRef.current && selectedPhoto !== null) {
                 sliderTrackRef.current.style.transform = `translate3d(-${selectedPhoto * 100}%, 0, 0)`;
-                sliderTrackRef.current.style.transition = 'transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)';
+                sliderTrackRef.current.style.transition = 'transform 0.55s cubic-bezier(0.16, 1, 0.3, 1)';
               }
             }}
           >
@@ -691,7 +701,7 @@ export default function App() {
               className="lightbox-slider-track"
               style={{
                 transform: `translate3d(-${selectedPhoto * 100}%, 0, 0)`,
-                transition: 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1)'
+                transition: 'transform 0.55s cubic-bezier(0.16, 1, 0.3, 1)'
               }}
             >
               {galleryPhotos.map((photoSrc, idx) => (
@@ -705,26 +715,31 @@ export default function App() {
               ))}
             </div>
 
-            {/* 하단 내비게이션 캡슐 바 */}
-            <div className="lightbox-nav-bar" onClick={(e) => e.stopPropagation()}>
-              <button 
-                className="lightbox-nav-btn"
-                onClick={() => setSelectedPhoto((selectedPhoto - 1 + galleryPhotos.length) % galleryPhotos.length)}
-                aria-label="이전 사진"
-              >
-                <i className="fa-solid fa-chevron-left"></i>
-              </button>
-              <span className="lightbox-counter">
-                {selectedPhoto + 1} / {galleryPhotos.length}
-              </span>
-              <button 
-                className="lightbox-nav-btn"
-                onClick={() => setSelectedPhoto((selectedPhoto + 1) % galleryPhotos.length)}
-                aria-label="다음 사진"
-              >
-                <i className="fa-solid fa-chevron-right"></i>
-              </button>
-            </div>
+            {/* 좌우 사이드 플로팅 전환 버튼 (사진 수직 중간 배치) */}
+            <button 
+              className="lightbox-side-btn lightbox-side-prev"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (selectedPhoto !== null) {
+                  setSelectedPhoto((selectedPhoto - 1 + galleryPhotos.length) % galleryPhotos.length);
+                }
+              }}
+              aria-label="이전 사진"
+            >
+              <i className="fa-solid fa-chevron-left"></i>
+            </button>
+            <button 
+              className="lightbox-side-btn lightbox-side-next"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (selectedPhoto !== null) {
+                  setSelectedPhoto((selectedPhoto + 1) % galleryPhotos.length);
+                }
+              }}
+              aria-label="다음 사진"
+            >
+              <i className="fa-solid fa-chevron-right"></i>
+            </button>
           </div>
         </div>
       )}
