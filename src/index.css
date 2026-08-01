@@ -191,10 +191,10 @@ body {
 .hero-wrapper {
   width: 340px;
   max-width: 92%;
-  height: 340px;
-  max-height: 44vh;
-  margin: 8px auto 20px;
-  border-radius: 170px 170px 16px 16px; /* 웅장한 황금비율 반원 아치 형성 */
+  height: 440px;
+  max-height: 53vh;
+  margin: 6px auto 18px;
+  border-radius: 170px 170px 16px 16px; /* 웅장하고 늘러신한 4:5 황금비율 아치 형성 */
   overflow: hidden;
   background-color: #F0EBE1;
   position: relative;
@@ -708,4 +708,50 @@ body {
 .btn-copy-account:hover {
   background-color: #EFEBE4;
   color: var(--wedding-text);
+}
+
+/* 청첩장 링크 공유하기 하단 푸터 스타일 */
+.share-btn-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+.btn-share {
+  width: 100%;
+  padding: 16px 20px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Pretendard', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  text-decoration: none;
+}
+.btn-share-native {
+  background-color: #3E3A39;
+  color: #FFFFFF;
+  border: 1px solid #3E3A39;
+}
+.btn-share-native:hover, .btn-share-native:active {
+  background-color: #262323;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+.btn-share-copy {
+  background-color: #FFFFFF;
+  color: var(--wedding-text);
+  border: 1px solid #D6CEB9;
+}
+.btn-share-copy:hover, .btn-share-copy:active {
+  background-color: #FDFBF7;
+  border-color: var(--wedding-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
 }

@@ -19,6 +19,7 @@ export default function App() {
   const [isCopied, setIsCopied] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
   const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
+  const [isLinkCopied, setIsLinkCopied] = useState(false);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -524,6 +525,53 @@ export default function App() {
                 </button>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* 8. 청첩장 링크 공유 및 하단 푸터 */}
+        <section className="section" style={{ backgroundColor: '#ECE8DF', padding: '60px 24px 70px', borderTop: '1px solid var(--car-border)' }}>
+          <h2 className="serif-title" style={{ fontSize: '22px', marginBottom: '16px' }}>초대장 공유하기</h2>
+          <p className="serif-text" style={{ fontSize: '13px', color: '#666', marginBottom: '28px', lineHeight: '1.6' }}>
+            소중한 지인분들께 모바일 청첩장을<br />간편하게 공유해 보세요.
+          </p>
+          
+          <div className="share-btn-container">
+            {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
+              <button 
+                className="btn-share btn-share-native"
+                onClick={() => {
+                  navigator.share({
+                    title: '[결혼합니다] 박재훈 ♥ 박정은',
+                    text: '2027년 1월 16일 토요일 오후 14:00, 아펠가모 선릉\n소중한 분들을 초대합니다.',
+                    url: window.location.href,
+                  }).catch(() => {});
+                }}
+              >
+                <i className="fa-regular fa-paper-plane" style={{ marginRight: '8px', fontSize: '15px' }}></i>
+                카카오톡·문자 공유하기
+              </button>
+            )}
+
+            <button 
+              className="btn-share btn-share-copy"
+              onClick={() => {
+                navigator.clipboard.writeText(window.location.href);
+                setIsLinkCopied(true);
+                setTimeout(() => setIsLinkCopied(false), 3000);
+              }}
+            >
+              {isLinkCopied ? (
+                <>
+                  <i className="fa-solid fa-check check-ani" style={{ color: 'var(--wedding-accent)', marginRight: '8px', fontSize: '15px' }}></i>
+                  <span style={{ color: 'var(--wedding-text)', fontWeight: '700' }}>청첩장 주소 복사완료!</span>
+                </>
+              ) : (
+                <>
+                  <i className="fa-solid fa-link" style={{ marginRight: '8px', fontSize: '15px' }}></i>
+                  청첩장 링크 주소 복사
+                </>
+              )}
+            </button>
           </div>
         </section>
       </main>
