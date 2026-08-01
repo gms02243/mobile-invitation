@@ -13,10 +13,12 @@ export default function App() {
   const [scrollY, setScrollY] = useState(0);
   const [gear, setGear] = useState<'P' | 'R' | 'N' | 'D'>('P');
   
-  // 네이버 지도 및 주소 복사 관련 상태
+  // 네이버 지도 및 주소/계좌/연락처 복사 관련 상태
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [mapError, setMapError] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
+  const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -100,10 +102,10 @@ export default function App() {
       scrollTimeout.current = setTimeout(() => {
         setGear('N');
 
-        // 3. N 상태 유지 2초(2000ms) 동안 움직임이 없으면 P(파킹)로 자동 변속
+        // 3. N 상태 유지 1초(1000ms) 동안 움직임이 없으면 P(파킹)로 자동 변속
         parkTimeout.current = setTimeout(() => {
           setGear('P');
-        }, 2000);
+        }, 1000);
       }, 150);
     };
 
@@ -113,6 +115,16 @@ export default function App() {
       if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
       if (parkTimeout.current) clearTimeout(parkTimeout.current);
     };
+  }, []);
+
+  // PC 웹 및 모바일 환경 전반 우클릭(롱프레스) 및 컨텍스트 메뉴 차단
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+      return false;
+    };
+    document.addEventListener('contextmenu', handleContextMenu);
+    return () => document.removeEventListener('contextmenu', handleContextMenu);
   }, []);
 
   // 스크롤 진행도에 따라 0km에서 페이지 끝 116km까지 증가 (결혼일 1월 16일 기념)
@@ -127,8 +139,20 @@ export default function App() {
   const heroOpacity = Math.max(0, 1 - clampedScrollY / 320);
   const heroTranslate = clampedScrollY * 0.22;
 
+  // KST(한국 표준시 UTC+9) 기준 현재 날짜와 2027년 1월 16일 간의 D-day 계산
+  const now = new Date();
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60 * 1000);
+  const kst = new Date(utc + (9 * 60 * 60 * 1000));
+  const todayKst = new Date(kst.getFullYear(), kst.getMonth(), kst.getDate()).getTime();
+  const weddingDateKst = new Date(2027, 0, 16).getTime(); // 2027년 1월 16일 자정
+  const diffDays = Math.ceil((weddingDateKst - todayKst) / (1000 * 60 * 60 * 24));
+  let ddayString = `D-${diffDays}`;
+  if (diffDays === 0) ddayString = 'D-DAY';
+  else if (diffDays < 0) ddayString = `D+${Math.abs(diffDays)}`;
+
+
   return (
-    <div className="display-container">
+    <div className="display-container" onContextMenu={(e) => e.preventDefault()}>
       {/* 1. 인포테인먼트 상단 상태바 */}
       <header className="status-bar">
         <div className="status-left">
@@ -172,13 +196,29 @@ export default function App() {
           <div className="hero-wrapper">
             <img src={weddingCarImg} alt="빈티지 웨딩카 메인 아치" className="hero-img" />
           </div>
-          <h1 className="serif-title" style={{ fontSize: '28px', marginBottom: '12px' }}>
-            박재훈 <span style={{ color: 'var(--wedding-accent)', fontSize: '20px' }}>&</span> 박정은
+          
+          <h1 className="serif-title" style={{ fontSize: '27px', marginBottom: '20px' }}>
+            박재훈 <span style={{ color: 'var(--wedding-accent)', fontSize: '20px', margin: '0 4px' }}>&</span> 박정은
           </h1>
-          <p style={{ fontSize: '15px', color: '#777', letterSpacing: '1px', lineHeight: '1.6', marginBottom: 0 }}>
-            {weddingData.dateDisplay}<br/>
-            <strong style={{ color: '#555' }}>{weddingData.location.name}</strong>
-          </p>
+
+          {/* 부모님 성함 안내 (각 줄 사이 및 하단 간격 충분히 띄움) */}
+          <div style={{ fontFamily: "'Nanum Myeongjo', serif", fontSize: '14px', color: '#555', marginBottom: '26px', textAlign: 'center' }}>
+            <div style={{ marginBottom: '9px' }}>
+              <span style={{ color: '#666' }}>박헌기 · 최미애</span>
+              <span style={{ fontSize: '13px', color: '#888', margin: '0 6px' }}>의 아들</span>
+              <strong style={{ color: 'var(--wedding-text)', fontWeight: '700' }}>재훈</strong>
+            </div>
+            <div>
+              <span style={{ color: '#666' }}>박남규 · 김현숙</span>
+              <span style={{ fontSize: '13px', color: '#888', margin: '0 6px' }}>의 딸</span>
+              <strong style={{ color: 'var(--wedding-text)', fontWeight: '700' }}>정은</strong>
+            </div>
+          </div>
+
+          <div style={{ fontSize: '14px', color: '#777', letterSpacing: '0.5px', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <span>{weddingData.dateDisplay}</span>
+            <strong style={{ color: '#555', fontSize: '15px' }}>{weddingData.location.name}</strong>
+          </div>
         </section>
 
         {/* 3. 인사말 섹션 */}
@@ -197,10 +237,14 @@ export default function App() {
         <section className="section">
           <h2 className="serif-title">Wedding Day</h2>
           <div className="calendar-widget">
-            {/* 고급스러운 캘린더 헤더 */}
+            {/* 2027년 상단 정중앙 배치 */}
+            <div className="calendar-top-year">
+              2027
+            </div>
+
+            {/* 하단 1월 표시 및 시간 안내 유지 */}
             <div className="calendar-header">
               <div className="cal-title-left">
-                <span className="cal-year">2027</span>
                 <span className="cal-month">1월</span>
                 <span className="cal-month-eng">JANUARY</span>
               </div>
@@ -230,9 +274,10 @@ export default function App() {
                 const dayOfWeek = (date - 1 + 5) % 7; // 0: 일요일, 6: 토요일
                 const isSunday = dayOfWeek === 0;
                 const isSaturday = dayOfWeek === 6;
+                const isHoliday = date === 1; // 1월 1일 신정 공휴일 반영
 
                 let numColor = 'var(--wedding-text)';
-                if (isSunday) numColor = '#D97373';
+                if (isSunday || isHoliday) numColor = '#D97373'; // 일요일 및 신정 공휴일 로즈 레드
                 else if (isSaturday) numColor = '#7392B7';
 
                 return (
@@ -240,7 +285,7 @@ export default function App() {
                     {date === 16 ? (
                       <div className="cal-highlight">{date}</div>
                     ) : (
-                      <span style={{ color: numColor, fontWeight: isSunday || isSaturday ? '500' : '400' }}>
+                      <span style={{ color: numColor, fontWeight: isSunday || isSaturday || isHoliday ? '500' : '400' }}>
                         {date}
                       </span>
                     )}
@@ -248,19 +293,32 @@ export default function App() {
                 );
               })}
             </div>
+          </div> {/* calendar-widget 끝 */}
+
+          {/* 달력 외부 아래에 위치한 모던 미니멀리스트 D-Day 섹션 */}
+          <div className="dday-section-minimal">
+            <span className="dday-label-minimal">WEDDING DAY</span>
+            <div className="dday-number-minimal">{ddayString}</div>
+            <p className="dday-text-minimal">
+              {diffDays > 0 ? (
+                <>재훈 & 정은의 결혼식까지 <span>{diffDays}일</span> 남았습니다.</>
+              ) : diffDays === 0 ? (
+                <>오늘, 두 사람이 부부로서 첫걸음을 내딛습니다.</>
+              ) : (
+                <>행복한 부부가 된 지 <span>{Math.abs(diffDays)}일</span>째 되는 날입니다.</>
+              )}
+            </p>
           </div>
         </section>
 
-        {/* 5. 웨딩 갤러리 */}
+        {/* 5. 웨딩 갤러리 (가로형 메인 없이 총 4개의 웨딩 사진 배치) */}
         <section className="section" style={{ backgroundColor: '#F8F6F0' }}>
           <h2 className="serif-title">우리의 순간들</h2>
           <div className="gallery-grid">
-            <div className="photo">웨딩 사진 1 (가로형 메인)</div>
+            <div className="photo">웨딩 사진 1</div>
             <div className="photo">웨딩 사진 2</div>
             <div className="photo">웨딩 사진 3</div>
             <div className="photo">웨딩 사진 4</div>
-            <div className="photo">웨딩 사진 5</div>
-            <div className="photo">웨딩 사진 6</div>
           </div>
         </section>
 
@@ -337,7 +395,7 @@ export default function App() {
                   </div>
                   <div className="transport-content">
                     <strong style={{ color: item.color }}>{item.type}</strong>
-                    <p>{item.text}</p>
+                    <p style={{ whiteSpace: 'pre-line', marginTop: '4px' }}>{item.text}</p>
                   </div>
                 </div>
               ))}
@@ -345,17 +403,126 @@ export default function App() {
           </div>
         </section>
 
-        {/* 7. 마음 전하실 곳 */}
+        {/* 7. 마음 전하실 곳 (처음부터 열려있는 직관적 계좌 안내) */}
         <section className="section" style={{ backgroundColor: '#F8F6F0', paddingBottom: '100px' }}>
           <h2 className="serif-title">마음 전하실 곳</h2>
-          <div style={{ width: '100%', backgroundColor: '#FFF', borderRadius: '16px', border: '1px solid var(--car-border)' }}>
-            <div style={{ padding: '20px', borderBottom: '1px solid var(--car-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: '600' }}>신랑측 계좌번호</span>
-              <i className="fa-solid fa-chevron-down" style={{ color: '#CCC' }}></i>
+          <p className="serif-text" style={{ marginBottom: '30px', color: '#666', fontSize: '14px' }}>
+            참석이 어려우신 분들을 위해<br />
+            계좌번호를 안내해 드립니다.<br />
+            넓은 양해 부탁드립니다.
+          </p>
+          
+          <div className="account-container">
+            {/* 신랑측 계좌 & 연락처 */}
+            <div className="account-box">
+              <div className="account-header">
+                <div className="account-title-row">
+                  <span className="account-tag groom-tag">신랑측</span>
+                  <strong className="account-name">{weddingData.groom.name}</strong>
+                </div>
+                <div 
+                  className="phone-badge" 
+                  onClick={() => {
+                    navigator.clipboard.writeText(weddingData.groom.phone);
+                    setCopiedPhone('groom');
+                    setTimeout(() => setCopiedPhone(null), 2500);
+                  }}
+                  title="터치하여 전화번호 복사"
+                >
+                  <span style={{ fontFamily: 'Pretendard, sans-serif', letterSpacing: '0.5px' }}>{weddingData.groom.phone}</span>
+                  {copiedPhone === 'groom' ? (
+                    <span className="copied-inline" style={{ marginLeft: '6px', color: 'var(--wedding-accent)', display: 'inline-flex', alignItems: 'center' }}>
+                      <i className="fa-solid fa-check check-ani" style={{ fontSize: '14px' }}></i>
+                    </span>
+                  ) : (
+                    <span className="copy-icon-btn" style={{ marginLeft: '6px' }}>
+                      <i className="fa-regular fa-copy" style={{ fontSize: '14px' }}></i>
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="account-details">
+                <div className="bank-info">
+                  <span className="bank-name">{weddingData.groom.bank}</span>
+                  <span className="account-num">{weddingData.groom.account}</span>
+                </div>
+                <button 
+                  className="btn-copy-account"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${weddingData.groom.bank} ${weddingData.groom.account}`);
+                    setCopiedAccount('groom');
+                    setTimeout(() => setCopiedAccount(null), 2500);
+                  }}
+                >
+                  {copiedAccount === 'groom' ? (
+                    <>
+                      <i className="fa-solid fa-check" style={{ color: 'var(--wedding-accent)', marginRight: '5px' }}></i>
+                      복사완료
+                    </>
+                  ) : (
+                    <>
+                      <i className="fa-regular fa-copy" style={{ marginRight: '5px' }}></i>
+                      계좌복사
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
-            <div style={{ padding: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: '600' }}>신부측 계좌번호</span>
-              <i className="fa-solid fa-chevron-down" style={{ color: '#CCC' }}></i>
+
+            {/* 신부측 계좌 & 연락처 */}
+            <div className="account-box" style={{ marginTop: '16px' }}>
+              <div className="account-header">
+                <div className="account-title-row">
+                  <span className="account-tag bride-tag">신부측</span>
+                  <strong className="account-name">{weddingData.bride.name}</strong>
+                </div>
+                <div 
+                  className="phone-badge" 
+                  onClick={() => {
+                    navigator.clipboard.writeText(weddingData.bride.phone);
+                    setCopiedPhone('bride');
+                    setTimeout(() => setCopiedPhone(null), 2500);
+                  }}
+                  title="터치하여 전화번호 복사"
+                >
+                  <span style={{ fontFamily: 'Pretendard, sans-serif', letterSpacing: '0.5px' }}>{weddingData.bride.phone}</span>
+                  {copiedPhone === 'bride' ? (
+                    <span className="copied-inline" style={{ marginLeft: '6px', color: 'var(--wedding-accent)', display: 'inline-flex', alignItems: 'center' }}>
+                      <i className="fa-solid fa-check check-ani" style={{ fontSize: '14px' }}></i>
+                    </span>
+                  ) : (
+                    <span className="copy-icon-btn" style={{ marginLeft: '6px' }}>
+                      <i className="fa-regular fa-copy" style={{ fontSize: '14px' }}></i>
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="account-details">
+                <div className="bank-info">
+                  <span className="bank-name">{weddingData.bride.bank}</span>
+                  <span className="account-num">{weddingData.bride.account}</span>
+                </div>
+                <button 
+                  className="btn-copy-account"
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${weddingData.bride.bank} ${weddingData.bride.account}`);
+                    setCopiedAccount('bride');
+                    setTimeout(() => setCopiedAccount(null), 2500);
+                  }}
+                >
+                  {copiedAccount === 'bride' ? (
+                    <>
+                      <i className="fa-solid fa-check" style={{ color: 'var(--wedding-accent)', marginRight: '5px' }}></i>
+                      복사완료
+                    </>
+                  ) : (
+                    <>
+                      <i className="fa-regular fa-copy" style={{ marginRight: '5px' }}></i>
+                      계좌복사
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </section>

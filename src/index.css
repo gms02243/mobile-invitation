@@ -12,6 +12,17 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-touch-callout: none; /* 모바일 환경 (iOS 등) 롱프레스 팝업 메뉴 차단 */
+  -webkit-user-select: none;   /* 텍스트 드래그 및 롱프레스 선택 금지 */
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+img {
+  pointer-events: none; /* 이미지 롱프레스 다운로드 및 PC 우클릭/드래그 원천 차단 */
+  -webkit-user-drag: none;
+  user-drag: none;
 }
 
 html, body {
@@ -170,25 +181,27 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 10px 24px 30px;
+  padding: 4px 16px 16px;
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
 }
 
-/* 메인 이미지 래퍼 (정밀한 반원 아치 구조 & 꾸겨짐 없앰) */
+/* 메인 이미지 래퍼 (화면에 가득 차고 웅장한 대형 아치 위젯) */
 .hero-wrapper {
-  width: 280px;
-  height: 360px;
-  margin: 0 auto 28px;
-  border-radius: 140px 140px 14px 14px; /* 폭 280px 기준 정확히 반원 아치(140px) 형성 */
+  width: 340px;
+  max-width: 92%;
+  height: 340px;
+  max-height: 44vh;
+  margin: 8px auto 20px;
+  border-radius: 170px 170px 16px 16px; /* 웅장한 황금비율 반원 아치 형성 */
   overflow: hidden;
   background-color: #F0EBE1;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.09);
   border: 4px solid #FFFFFF;
 }
 
@@ -199,26 +212,24 @@ body {
   display: block;
 }
 
-/* 갤러리 그리드 */
+/* 갤러리 그리드 (가로형 메인 없이 4개의 균형 잡힌 2x2 정렬) */
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 14px;
   width: 100%;
-}
-.gallery-grid .photo:nth-child(1) {
-  grid-column: 1 / -1;
-  height: 280px;
 }
 .photo {
   background-color: #EAE6DF;
-  height: 180px;
-  border-radius: 12px;
+  height: 220px;
+  border-radius: 14px;
   display: flex;
   justify-content: center;
   align-items: center;
   color: #999;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 /* 내비게이션 UI (소프트하고 정밀한 차량 내비 콘셉트) */
@@ -440,8 +451,9 @@ body {
 .transport-content p {
   font-size: 13px;
   color: #555;
-  line-height: 1.5;
+  line-height: 1.6;
   word-break: keep-all;
+  white-space: pre-line; /* 한 줄이 끝날 때마다 개행 적용 */
 }
 
 /* 달력 UI */
@@ -453,6 +465,18 @@ body {
   border: 1px solid var(--car-border);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.03);
   margin-top: 12px;
+}
+
+/* 2027년 상단 정중앙 큼직하고 기품있는 연도 표시 */
+.calendar-top-year {
+  text-align: center;
+  font-size: 26px;
+  color: var(--wedding-text);
+  font-weight: 800;
+  letter-spacing: 6px;
+  margin-bottom: 16px;
+  font-family: 'Noto Serif KR', 'Nanum Myeongjo', serif;
+  text-shadow: 0 0 1px var(--wedding-text); /* 선을 도톰하고 확실하게 살리는 볼드체 보정 */
 }
 
 /* 캘린더 고급 헤더 스타일 */
@@ -470,12 +494,6 @@ body {
   display: flex;
   align-items: baseline;
   gap: 6px;
-}
-.cal-year {
-  font-size: 14px;
-  color: #888;
-  font-weight: 500;
-  letter-spacing: 0.5px;
 }
 .cal-month {
   font-size: 24px;
@@ -543,4 +561,151 @@ body {
   justify-content: center;
   font-weight: 700;
   box-shadow: 0 4px 12px rgba(200, 169, 126, 0.45);
+}
+
+/* 달력 외부에 위치한 모던 미니멀 D-Day 타이포그래피 */
+.dday-section-minimal {
+  margin-top: 42px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.dday-label-minimal {
+  font-size: 11px;
+  font-family: 'Poppins', 'Pretendard', sans-serif;
+  letter-spacing: 3px;
+  color: var(--wedding-accent);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.dday-number-minimal {
+  font-size: 50px;
+  font-family: 'Noto Serif KR', 'Nanum Myeongjo', serif;
+  font-weight: 700;
+  color: var(--wedding-text);
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.dday-text-minimal {
+  font-family: 'Nanum Myeongjo', serif;
+  font-size: 15px;
+  color: #666;
+  line-height: 1.6;
+}
+.dday-text-minimal span {
+  color: var(--wedding-text);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-color: rgba(200, 169, 126, 0.6);
+}
+
+/* 마음 전하실 곳 계좌 안내 오픈 카드 스타일 */
+.account-container {
+  width: 100%;
+  text-align: left;
+}
+.account-box {
+  background: #FFF;
+  border: 1px solid var(--car-border);
+  border-radius: 16px;
+  padding: 24px 22px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-sizing: border-box;
+}
+.account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.account-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.phone-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+  transition: opacity 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+  user-select: none;
+}
+.phone-badge:hover, .phone-badge:active {
+  color: var(--wedding-text);
+  opacity: 0.85;
+}
+.account-tag {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+}
+.groom-tag {
+  background-color: #EBF4FB;
+  color: #2B90D9;
+}
+.bride-tag {
+  background-color: #FCEEF2;
+  color: #D97373;
+}
+.account-name {
+  font-size: 16px;
+  color: var(--wedding-text);
+  font-weight: 700;
+  font-family: 'Pretendard', sans-serif;
+}
+.account-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px dashed #EAE6DF;
+}
+.bank-info {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.bank-name {
+  font-size: 13px;
+  color: #777;
+  font-weight: 500;
+}
+.account-num {
+  font-size: 16px;
+  color: var(--wedding-text);
+  font-weight: 700;
+  font-family: 'Pretendard', sans-serif;
+  letter-spacing: 0.5px;
+}
+.btn-copy-account {
+  background-color: #F8F6F0;
+  border: 1px solid #EAE1D3;
+  color: #555;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+.btn-copy-account:hover {
+  background-color: #EFEBE4;
+  color: var(--wedding-text);
 }
