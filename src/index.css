@@ -211,54 +211,57 @@ body {
   display: block;
 }
 
-/* 갤러리 그리드 (4x2 총 8컷 모던 갤러리 레이아웃) */
+/* 갤러리 그리드 (한 열에 4개씩 4x2 총 8컷 모던 매거진 레이아웃) */
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
   width: 100%;
 }
 .photo-item {
   position: relative;
-  border-radius: 16px;
+  border-radius: 10px;
   overflow: hidden;
   aspect-ratio: 4 / 5;
   background-color: #EAE6DF;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
   cursor: pointer;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 .photo-item:active, .photo-item:hover {
-  transform: scale(0.97);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.09);
+  transform: scale(0.96);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
 }
 .photo-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
-  transition: transform 0.5s ease;
+  transition: transform 0.4s ease;
 }
 .photo-item:hover .photo-img {
-  transform: scale(1.05);
+  transform: scale(1.06);
 }
 
-/* 갤러리 라이트박스 모달 (사진 확대 및 좌우 슬라이드 뷰어) */
+/* 갤러리 라이트박스 모달 (iOS Safari 풀스크린 및 스크롤 원천 차단 대응) */
 .lightbox-overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(12, 12, 15, 0.92);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 10000;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  background-color: #0a0a0d;
+  z-index: 999999;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px;
+  padding: 16px;
   animation: fadeIn 0.2s ease-out;
+  touch-action: none;
 }
 
 @keyframes fadeIn {
@@ -284,6 +287,11 @@ body {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
   user-select: none;
   -webkit-user-select: none;
+  touch-action: pan-y;
+  cursor: grab;
+}
+.lightbox-img:active {
+  cursor: grabbing;
 }
 
 .lightbox-close-btn {

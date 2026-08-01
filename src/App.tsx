@@ -22,8 +22,42 @@ export default function App() {
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchEndXRef = useRef<number | null>(null);
 
   const galleryPhotos = Array.from({ length: 8 }, (_, i) => `${import.meta.env.BASE_URL}pic/${i + 1}.jpg`);
+
+  const handleSwipeEnd = () => {
+    if (touchStartXRef.current !== null && touchEndXRef.current !== null) {
+      const distance = touchStartXRef.current - touchEndXRef.current;
+      const minSwipeDistance = 35; // 35px 이상 손가락이나 마우스로 슬라이드 시 다음/이전 전환
+      if (Math.abs(distance) > minSwipeDistance) {
+        if (distance > 0) {
+          setSelectedPhoto((prev) => (prev !== null ? (prev + 1) % galleryPhotos.length : null));
+        } else {
+          setSelectedPhoto((prev) => (prev !== null ? (prev - 1 + galleryPhotos.length) % galleryPhotos.length : null));
+        }
+      }
+    }
+    touchStartXRef.current = null;
+    touchEndXRef.current = null;
+  };
+
+  // 모달 열림 시 배경 웹페이지 스크롤 원천 차단 (iOS Safari 및 일반 브라우저 완벽 대응)
+  useEffect(() => {
+    if (selectedPhoto !== null) {
+      const originalOverflow = document.body.style.overflow;
+      const originalTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+      document.documentElement.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        document.body.style.touchAction = originalTouchAction;
+        document.documentElement.style.overflow = '';
+      };
+    }
+  }, [selectedPhoto]);
 
   useEffect(() => {
     const initMap = () => {
@@ -156,8 +190,9 @@ export default function App() {
 
 
   return (
-    <div className="display-container" onContextMenu={(e) => e.preventDefault()}>
-      {/* 1. 인포테인먼트 상단 상태바 */}
+    <>
+      <div className="display-container" onContextMenu={(e) => e.preventDefault()}>
+        {/* 1. 인포테인먼트 상단 상태바 */}
       <header className="status-bar">
         <div className="status-left">
           <span className="speed-num">{distance}</span>
@@ -586,54 +621,77 @@ export default function App() {
             </button>
           </div>
         </section>
+      </main>
+      </div>
 
-        {/* 사진 크게 보기 모달 (라이트박스 뷰어) */}
-        {selectedPhoto !== null && (
+      {/* 사진 크게 보기 모달 (라이트박스 뷰어 - iOS Safari 완벽 대응 및 최상위 DOM 분리) */}
+      {selectedPhoto !== null && (
+        <div 
+          className="lightbox-overlay" 
+          onClick={() => setSelectedPhoto(null)}
+        >
           <div 
-            className="lightbox-overlay" 
-            onClick={() => setSelectedPhoto(null)}
+            className="lightbox-content" 
+            onClick={(e) => e.stopPropagation()}
+            onTouchStart={(e) => {
+              touchStartXRef.current = e.targetTouches[0].clientX;
+              touchEndXRef.current = null;
+            }}
+            onTouchMove={(e) => {
+              touchEndXRef.current = e.targetTouches[0].clientX;
+            }}
+            onTouchEnd={handleSwipeEnd}
+            onMouseDown={(e) => {
+              touchStartXRef.current = e.clientX;
+              touchEndXRef.current = null;
+            }}
+            onMouseMove={(e) => {
+              if (touchStartXRef.current !== null) {
+                touchEndXRef.current = e.clientX;
+              }
+            }}
+            onMouseUp={handleSwipeEnd}
+            onMouseLeave={() => {
+              touchStartXRef.current = null;
+              touchEndXRef.current = null;
+            }}
           >
-            <div 
-              className="lightbox-content" 
-              onClick={(e) => e.stopPropagation()}
+            <button 
+              className="lightbox-close-btn"
+              onClick={() => setSelectedPhoto(null)}
+              aria-label="닫기"
             >
-              <button 
-                className="lightbox-close-btn"
-                onClick={() => setSelectedPhoto(null)}
-                aria-label="닫기"
-              >
-                <i className="fa-solid fa-xmark"></i>
-              </button>
-              
-              <img 
-                src={galleryPhotos[selectedPhoto]} 
-                alt={`웨딩 사진 ${selectedPhoto + 1}`} 
-                className="lightbox-img"
-              />
+              <i className="fa-solid fa-xmark"></i>
+            </button>
+            
+            <img 
+              src={galleryPhotos[selectedPhoto]} 
+              alt={`웨딩 사진 ${selectedPhoto + 1}`} 
+              className="lightbox-img"
+            />
 
-              <div className="lightbox-nav-bar">
-                <button 
-                  className="lightbox-nav-btn"
-                  onClick={() => setSelectedPhoto((selectedPhoto - 1 + galleryPhotos.length) % galleryPhotos.length)}
-                  aria-label="이전 사진"
-                >
-                  <i className="fa-solid fa-chevron-left"></i>
-                </button>
-                <span className="lightbox-counter">
-                  {selectedPhoto + 1} / {galleryPhotos.length}
-                </span>
-                <button 
-                  className="lightbox-nav-btn"
-                  onClick={() => setSelectedPhoto((selectedPhoto + 1) % galleryPhotos.length)}
-                  aria-label="다음 사진"
-                >
-                  <i className="fa-solid fa-chevron-right"></i>
-                </button>
-              </div>
+            <div className="lightbox-nav-bar">
+              <button 
+                className="lightbox-nav-btn"
+                onClick={() => setSelectedPhoto((selectedPhoto - 1 + galleryPhotos.length) % galleryPhotos.length)}
+                aria-label="이전 사진"
+              >
+                <i className="fa-solid fa-chevron-left"></i>
+              </button>
+              <span className="lightbox-counter">
+                {selectedPhoto + 1} / {galleryPhotos.length}
+              </span>
+              <button 
+                className="lightbox-nav-btn"
+                onClick={() => setSelectedPhoto((selectedPhoto + 1) % galleryPhotos.length)}
+                aria-label="다음 사진"
+              >
+                <i className="fa-solid fa-chevron-right"></i>
+              </button>
             </div>
           </div>
-        )}
-      </main>
-    </div>
+        </div>
+      )}
+    </>
   );
 }
