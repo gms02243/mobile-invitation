@@ -318,9 +318,9 @@ body {
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  background: rgba(30, 30, 35, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #FFF;
+  background: rgba(30, 30, 35, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
   font-size: 24px;
   cursor: pointer;
   z-index: 1000;
@@ -331,9 +331,12 @@ body {
   -webkit-backdrop-filter: blur(8px);
   transition: transform 0.2s, background 0.2s;
 }
+.lightbox-close-btn:hover {
+  background: rgba(45, 45, 55, 0.45);
+}
 .lightbox-close-btn:active {
   transform: scale(0.92);
-  background: rgba(60, 60, 70, 0.9);
+  background: rgba(60, 60, 70, 0.5);
 }
 
 /* 좌우 사이드 플로팅 전환 버튼 (화면 수직 가운데 양끝 배치, 숫자 카운터 제거) */
@@ -344,9 +347,9 @@ body {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: rgba(25, 25, 30, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #FFF;
+  background: rgba(25, 25, 30, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
   font-size: 20px;
   cursor: pointer;
   z-index: 1000;
@@ -355,7 +358,7 @@ body {
   justify-content: center;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
   transition: background 0.25s ease, transform 0.2s ease, opacity 0.2s ease;
   user-select: none;
   -webkit-user-select: none;
@@ -370,12 +373,39 @@ body {
 }
 
 .lightbox-side-btn:hover {
-  background: rgba(45, 45, 55, 0.85);
+  background: rgba(45, 45, 55, 0.45);
   transform: translateY(-50%) scale(1.05);
 }
 .lightbox-side-btn:active {
-  background: rgba(65, 65, 75, 0.95);
+  background: rgba(65, 65, 75, 0.55);
   transform: translateY(-50%) scale(0.92);
+}
+
+/* PC / 데스크탑 환경에서는 사진이 모니터 끝까지 거대하게 확대되지 않도록 매거진 화보 규격으로 최적화 */
+@media (min-width: 768px) {
+  .lightbox-img {
+    max-width: 540px;
+    max-height: 82vh;
+    border-radius: 12px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65);
+  }
+  
+  .lightbox-side-btn {
+    width: 54px;
+    height: 54px;
+    font-size: 22px;
+  }
+  .lightbox-side-prev {
+    left: calc(50% - 350px);
+  }
+  .lightbox-side-next {
+    right: calc(50% - 350px);
+  }
+
+  .lightbox-close-btn {
+    top: 32px;
+    right: 40px;
+  }
 }
 
 /* 내비게이션 UI (소프트하고 정밀한 차량 내비 콘셉트) */
@@ -516,49 +546,53 @@ body {
 .navi-map-wrapper {
   margin-bottom: 26px;
 }
-.map-view {
+/* 정적 지도 캡처 링크 */
+.static-map-link {
+  display: block;
   width: 100%;
   height: 280px;
-  background-color: #ECE8DF;
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid var(--car-border);
   position: relative;
+  text-decoration: none;
+}
+.static-map-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.static-map-link:hover .static-map-img {
+  transform: scale(1.05);
+}
+.map-overlay-button {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--wedding-text);
+  padding: 10px 22px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  border: 1px solid rgba(0,0,0,0.05);
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  white-space: nowrap;
 }
-.map-fallback {
-  width: 90%;
-  background: rgba(255, 255, 255, 0.96);
-  padding: 24px 20px;
-  border-radius: 14px;
-  text-align: center;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.06);
-  border: 1px solid #E5DFD4;
+.static-map-link:hover .map-overlay-button {
+  background: #fff;
+  transform: translateX(-50%) translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
 }
-.fallback-icon {
-  font-size: 28px;
+.map-overlay-button i {
   color: var(--wedding-accent);
-  margin-bottom: 8px;
-}
-.map-fallback strong {
-  display: block;
   font-size: 16px;
-  color: var(--wedding-text);
-  margin-bottom: 8px;
-}
-.map-fallback p {
-  font-size: 13px;
-  color: #666;
-  line-height: 1.5;
-  margin-bottom: 0;
-}
-.map-fallback code {
-  color: #C8A97E;
-  background: #F4EFE6;
-  padding: 2px 6px;
-  border-radius: 4px;
 }
 
 /* 교통 상세 안내 리스트 */
@@ -757,13 +791,18 @@ body {
 .account-box {
   background: #FFF;
   border: 1px solid var(--car-border);
-  border-radius: 16px;
+  border-radius: 18px;
   padding: 24px 22px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
   box-sizing: border-box;
+}
+.account-person {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 .account-header {
   display: flex;
@@ -818,8 +857,7 @@ body {
   align-items: center;
   flex-wrap: wrap;
   gap: 10px;
-  padding-top: 14px;
-  border-top: 1px dashed #EAE6DF;
+  padding-top: 2px;
 }
 .bank-info {
   display: flex;

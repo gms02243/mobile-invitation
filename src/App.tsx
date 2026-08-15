@@ -13,20 +13,31 @@ export default function App() {
   const [scrollY, setScrollY] = useState(0);
   const [gear, setGear] = useState<'P' | 'R' | 'N' | 'D'>('P');
   
-  // 네이버 지도 및 주소/계좌/연락처 복사 관련 상태
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const [mapError, setMapError] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [copiedAccount, setCopiedAccount] = useState<string | null>(null);
   const [copiedPhone, setCopiedPhone] = useState<string | null>(null);
   const [isLinkCopied, setIsLinkCopied] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
-  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const [isSlideTransitioning, setIsSlideTransitioning] = useState(true);
   const touchStartXRef = useRef<number | null>(null);
   const touchEndXRef = useRef<number | null>(null);
   const sliderTrackRef = useRef<HTMLDivElement | null>(null);
 
   const galleryPhotos = Array.from({ length: 8 }, (_, i) => `${import.meta.env.BASE_URL}pic/${i + 1}.jpg`);
+  // 처음-끝 사진 간 쭈루룩 역전행 애니메이션 없이 자연스럽게 순조로운 무한 루프 슬라이딩을 위한 클론 배열
+  const loopPhotos = [galleryPhotos[galleryPhotos.length - 1], ...galleryPhotos, galleryPhotos[0]];
+
+  const handleCopyPhone = (phone: string, id: string) => {
+    navigator.clipboard.writeText(phone);
+    setCopiedPhone(id);
+    setTimeout(() => setCopiedPhone(null), 2500);
+  };
+
+  const handleCopyAccount = (bank: string, account: string, id: string) => {
+    navigator.clipboard.writeText(`${bank} ${account}`);
+    setCopiedAccount(id);
+    setTimeout(() => setCopiedAccount(null), 2500);
+  };
 
   const handleSwipeMove = (currentX: number) => {
     touchEndXRef.current = currentX;
@@ -42,26 +53,46 @@ export default function App() {
     if (touchStartXRef.current !== null && touchEndXRef.current !== null && selectedPhoto !== null) {
       const distance = touchStartXRef.current - touchEndXRef.current;
       const minSwipeDistance = 25; // 25px 이상 스와이프 시 부드러운 관성 애니메이션 발동
-      if (sliderTrackRef.current) {
-        // 미끄러지듯 자연스럽게 착지하는 고급 관성 물리 감속 곡선 적용
-        sliderTrackRef.current.style.transition = 'transform 0.55s cubic-bezier(0.16, 1, 0.3, 1)';
-      }
       if (Math.abs(distance) > minSwipeDistance) {
+        setIsSlideTransitioning(true);
+        if (sliderTrackRef.current) {
+          sliderTrackRef.current.style.transition = 'transform 0.55s cubic-bezier(0.16, 1, 0.3, 1)';
+        }
         if (distance > 0) {
-          setSelectedPhoto((prev) => (prev !== null ? (prev + 1) % galleryPhotos.length : null));
+          setSelectedPhoto((prev) => (prev !== null && prev < loopPhotos.length - 1 ? prev + 1 : prev));
         } else {
-          setSelectedPhoto((prev) => (prev !== null ? (prev - 1 + galleryPhotos.length) % galleryPhotos.length : null));
+          setSelectedPhoto((prev) => (prev !== null && prev > 0 ? prev - 1 : prev));
         }
       } else if (sliderTrackRef.current) {
+        setIsSlideTransitioning(true);
         sliderTrackRef.current.style.transform = `translate3d(-${selectedPhoto * 100}%, 0, 0)`;
+        sliderTrackRef.current.style.transition = 'transform 0.35s ease-out';
       }
     } else if (sliderTrackRef.current && selectedPhoto !== null) {
+      setIsSlideTransitioning(true);
       sliderTrackRef.current.style.transform = `translate3d(-${selectedPhoto * 100}%, 0, 0)`;
-      sliderTrackRef.current.style.transition = 'transform 0.55s cubic-bezier(0.16, 1, 0.3, 1)';
+      sliderTrackRef.current.style.transition = 'transform 0.35s ease-out';
     }
     touchStartXRef.current = null;
     touchEndXRef.current = null;
   };
+
+  // 무한 루프 가장자리(클론 0 또는 9)에 도달했을 때, 브라우저 이벤트 간섭이나 연속 터치로 onTransitionEnd가 누락되더라도 절대 멈추거나 먹통이 되지 않도록 보장하는 안전 복구 타이머
+  useEffect(() => {
+    if (selectedPhoto === 0) {
+      const timer = setTimeout(() => {
+        setIsSlideTransitioning(false);
+        setSelectedPhoto(galleryPhotos.length);
+      }, 550);
+      return () => clearTimeout(timer);
+    } else if (selectedPhoto === loopPhotos.length - 1) {
+      const timer = setTimeout(() => {
+        setIsSlideTransitioning(false);
+        setSelectedPhoto(1);
+      }, 550);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedPhoto, galleryPhotos.length, loopPhotos.length]);
 
   // 모달 열림 시 배경 웹페이지 스크롤 원천 차단 (iOS Safari 및 일반 브라우저 완벽 대응)
   useEffect(() => {
@@ -79,60 +110,7 @@ export default function App() {
     }
   }, [selectedPhoto]);
 
-  useEffect(() => {
-    const initMap = () => {
-      if (window.naver && window.naver.maps && mapContainerRef.current) {
-        try {
-          const { lat, lng, name } = weddingData.location;
-          const center = new window.naver.maps.LatLng(lat, lng);
-          const map = new window.naver.maps.Map(mapContainerRef.current, {
-            center: center,
-            zoom: 16,
-            zoomControl: false,
-          });
-          new window.naver.maps.Marker({
-            position: center,
-            map: map,
-            title: name,
-          });
-          setIsMapLoaded(true);
-        } catch (err) {
-          console.error("네이버 지도 초기화 오류:", err);
-          setMapError(true);
-        }
-      }
-    };
 
-    if (window.naver && window.naver.maps) {
-      initMap();
-      return;
-    }
-
-    const clientId = weddingData.naverClientId;
-    if (!clientId || clientId === "YOUR_NAVER_CLIENT_ID") {
-      setMapError(true);
-      return;
-    }
-
-    const scriptId = "naver-map-script";
-    let script = document.getElementById(scriptId) as HTMLScriptElement;
-    if (!script) {
-      script = document.createElement("script");
-      script.id = scriptId;
-      script.src = `https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=${clientId}`;
-      script.async = true;
-      script.onload = () => {
-        initMap();
-      };
-      script.onerror = () => {
-        setMapError(true);
-      };
-      document.head.appendChild(script);
-    } else {
-      script.addEventListener("load", initMap);
-    }
-  }, []);
-  
   // 이전 스크롤 위치와 N/P 기어 전환 타이머를 저장하기 위한 useRef
   const lastScrollY = useRef(0);
   const scrollTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -378,7 +356,10 @@ export default function App() {
               <div 
                 key={idx} 
                 className="photo-item"
-                onClick={() => setSelectedPhoto(idx)}
+                onClick={() => {
+                  setIsSlideTransitioning(false);
+                  setSelectedPhoto(idx + 1); // loopPhotos 기준 실제 사진 인덱스 (1 ~ 8)로 시작
+                }}
               >
                 <img 
                   src={photoSrc} 
@@ -436,23 +417,15 @@ export default function App() {
               </div>
             </div>
 
-            {/* 네이버 지도 영역 */}
+            {/* 고해상도 정적 지도 캡처 이미지 (클릭 시 네이버 지도 이동) */}
             <div className="navi-map-wrapper">
-              <div ref={mapContainerRef} id="naver-map" className="map-view">
-                {(!isMapLoaded || mapError) && (
-                  <div className="map-fallback">
-                    <div className="fallback-icon">
-                      <i className="fa-solid fa-map-location-dot"></i>
-                    </div>
-                    <strong>아펠가모 선릉 (Pin 위치 설정됨)</strong>
-                    <p>
-                      실시간 네이버 지도를 표시하시려면<br />
-                      <b>src/data.ts</b>의 <code>naverClientId</code>에<br />
-                      발급받으신 NCP Client ID를 입력해 주세요.
-                    </p>
-                  </div>
-                )}
-              </div>
+              <a href={weddingData.location.mapUrl} target="_blank" rel="noopener noreferrer" className="static-map-link">
+                <img src="/map_capture.jpg" alt="오시는 길 지도" className="static-map-img" />
+                <div className="map-overlay-button">
+                  <i className="fa-solid fa-map-location-dot"></i>
+                  <span>네이버 지도로 길찾기</span>
+                </div>
+              </a>
             </div>
 
             {/* 상세 교통편 안내 */}
@@ -482,116 +455,212 @@ export default function App() {
           </p>
           
           <div className="account-container">
-            {/* 신랑측 계좌 & 연락처 */}
+            {/* 신랑 및 신랑측 부모님 계좌 & 연락처 */}
             <div className="account-box">
-              <div className="account-header">
-                <div className="account-title-row">
-                  <span className="account-tag groom-tag">신랑측</span>
-                  <strong className="account-name">{weddingData.groom.name}</strong>
+              {/* 신랑 계좌 */}
+              <div className="account-person">
+                <div className="account-header">
+                  <div className="account-title-row">
+                    <span className="account-tag groom-tag">신랑</span>
+                    <strong className="account-name">{weddingData.groom.name}</strong>
+                  </div>
+                  <div 
+                    className="phone-badge" 
+                    onClick={() => handleCopyPhone(weddingData.groom.phone, 'groom')}
+                    title="터치하여 전화번호 복사"
+                  >
+                    <span style={{ fontFamily: 'Pretendard, sans-serif', letterSpacing: '0.5px' }}>{weddingData.groom.phone}</span>
+                    {copiedPhone === 'groom' ? (
+                      <span className="copied-inline" style={{ marginLeft: '6px', color: 'var(--wedding-accent)', display: 'inline-flex', alignItems: 'center' }}>
+                        <i className="fa-solid fa-check check-ani" style={{ fontSize: '14px' }}></i>
+                      </span>
+                    ) : (
+                      <span className="copy-icon-btn" style={{ marginLeft: '6px' }}>
+                        <i className="fa-regular fa-copy" style={{ fontSize: '14px' }}></i>
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div 
-                  className="phone-badge" 
-                  onClick={() => {
-                    navigator.clipboard.writeText(weddingData.groom.phone);
-                    setCopiedPhone('groom');
-                    setTimeout(() => setCopiedPhone(null), 2500);
-                  }}
-                  title="터치하여 전화번호 복사"
-                >
-                  <span style={{ fontFamily: 'Pretendard, sans-serif', letterSpacing: '0.5px' }}>{weddingData.groom.phone}</span>
-                  {copiedPhone === 'groom' ? (
-                    <span className="copied-inline" style={{ marginLeft: '6px', color: 'var(--wedding-accent)', display: 'inline-flex', alignItems: 'center' }}>
-                      <i className="fa-solid fa-check check-ani" style={{ fontSize: '14px' }}></i>
-                    </span>
-                  ) : (
-                    <span className="copy-icon-btn" style={{ marginLeft: '6px' }}>
-                      <i className="fa-regular fa-copy" style={{ fontSize: '14px' }}></i>
-                    </span>
-                  )}
+                <div className="account-details">
+                  <div className="bank-info">
+                    <span className="bank-name">{weddingData.groom.bank}</span>
+                    <span className="account-num">{weddingData.groom.account}</span>
+                  </div>
+                  <button 
+                    className="btn-copy-account"
+                    onClick={() => handleCopyAccount(weddingData.groom.bank, weddingData.groom.account, 'groom')}
+                  >
+                    {copiedAccount === 'groom' ? (
+                      <>
+                        <i className="fa-solid fa-check" style={{ color: 'var(--wedding-accent)', marginRight: '5px' }}></i>
+                        복사완료
+                      </>
+                    ) : (
+                      <>
+                        <i className="fa-regular fa-copy" style={{ marginRight: '5px' }}></i>
+                        계좌복사
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
-              <div className="account-details">
-                <div className="bank-info">
-                  <span className="bank-name">{weddingData.groom.bank}</span>
-                  <span className="account-num">{weddingData.groom.account}</span>
-                </div>
-                <button 
-                  className="btn-copy-account"
-                  onClick={() => {
-                    navigator.clipboard.writeText(`${weddingData.groom.bank} ${weddingData.groom.account}`);
-                    setCopiedAccount('groom');
-                    setTimeout(() => setCopiedAccount(null), 2500);
-                  }}
-                >
-                  {copiedAccount === 'groom' ? (
-                    <>
-                      <i className="fa-solid fa-check" style={{ color: 'var(--wedding-accent)', marginRight: '5px' }}></i>
-                      복사완료
-                    </>
-                  ) : (
-                    <>
-                      <i className="fa-regular fa-copy" style={{ marginRight: '5px' }}></i>
-                      계좌복사
-                    </>
-                  )}
-                </button>
-              </div>
+
+              {/* 신랑측 부모님 계좌 */}
+              {weddingData.groom.parents.map((parent, idx) => {
+                const id = `groom_parent_${idx}`;
+                return (
+                  <div key={idx} className="account-person" style={{ paddingTop: '16px', borderTop: '1px dashed #EAE6DF' }}>
+                    <div className="account-header">
+                      <div className="account-title-row">
+                        <span className="account-tag groom-tag">{parent.relation}</span>
+                        <strong className="account-name">{parent.name}</strong>
+                      </div>
+                      <div 
+                        className="phone-badge" 
+                        onClick={() => handleCopyPhone(parent.phone, id)}
+                        title="터치하여 전화번호 복사"
+                      >
+                        <span style={{ fontFamily: 'Pretendard, sans-serif', letterSpacing: '0.5px' }}>{parent.phone}</span>
+                        {copiedPhone === id ? (
+                          <span className="copied-inline" style={{ marginLeft: '6px', color: 'var(--wedding-accent)', display: 'inline-flex', alignItems: 'center' }}>
+                            <i className="fa-solid fa-check check-ani" style={{ fontSize: '14px' }}></i>
+                          </span>
+                        ) : (
+                          <span className="copy-icon-btn" style={{ marginLeft: '6px' }}>
+                            <i className="fa-regular fa-copy" style={{ fontSize: '14px' }}></i>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="account-details">
+                      <div className="bank-info">
+                        <span className="bank-name">{parent.bank}</span>
+                        <span className="account-num">{parent.account}</span>
+                      </div>
+                      <button 
+                        className="btn-copy-account"
+                        onClick={() => handleCopyAccount(parent.bank, parent.account, id)}
+                      >
+                        {copiedAccount === id ? (
+                          <>
+                            <i className="fa-solid fa-check" style={{ color: 'var(--wedding-accent)', marginRight: '5px' }}></i>
+                            복사완료
+                          </>
+                        ) : (
+                          <>
+                            <i className="fa-regular fa-copy" style={{ marginRight: '5px' }}></i>
+                            계좌복사
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
 
-            {/* 신부측 계좌 & 연락처 */}
-            <div className="account-box" style={{ marginTop: '16px' }}>
-              <div className="account-header">
-                <div className="account-title-row">
-                  <span className="account-tag bride-tag">신부측</span>
-                  <strong className="account-name">{weddingData.bride.name}</strong>
+            {/* 신부 및 신부측 부모님 계좌 & 연락처 */}
+            <div className="account-box" style={{ marginTop: '20px' }}>
+              {/* 신부 계좌 */}
+              <div className="account-person">
+                <div className="account-header">
+                  <div className="account-title-row">
+                    <span className="account-tag bride-tag">신부</span>
+                    <strong className="account-name">{weddingData.bride.name}</strong>
+                  </div>
+                  <div 
+                    className="phone-badge" 
+                    onClick={() => handleCopyPhone(weddingData.bride.phone, 'bride')}
+                    title="터치하여 전화번호 복사"
+                  >
+                    <span style={{ fontFamily: 'Pretendard, sans-serif', letterSpacing: '0.5px' }}>{weddingData.bride.phone}</span>
+                    {copiedPhone === 'bride' ? (
+                      <span className="copied-inline" style={{ marginLeft: '6px', color: 'var(--wedding-accent)', display: 'inline-flex', alignItems: 'center' }}>
+                        <i className="fa-solid fa-check check-ani" style={{ fontSize: '14px' }}></i>
+                      </span>
+                    ) : (
+                      <span className="copy-icon-btn" style={{ marginLeft: '6px' }}>
+                        <i className="fa-regular fa-copy" style={{ fontSize: '14px' }}></i>
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div 
-                  className="phone-badge" 
-                  onClick={() => {
-                    navigator.clipboard.writeText(weddingData.bride.phone);
-                    setCopiedPhone('bride');
-                    setTimeout(() => setCopiedPhone(null), 2500);
-                  }}
-                  title="터치하여 전화번호 복사"
-                >
-                  <span style={{ fontFamily: 'Pretendard, sans-serif', letterSpacing: '0.5px' }}>{weddingData.bride.phone}</span>
-                  {copiedPhone === 'bride' ? (
-                    <span className="copied-inline" style={{ marginLeft: '6px', color: 'var(--wedding-accent)', display: 'inline-flex', alignItems: 'center' }}>
-                      <i className="fa-solid fa-check check-ani" style={{ fontSize: '14px' }}></i>
-                    </span>
-                  ) : (
-                    <span className="copy-icon-btn" style={{ marginLeft: '6px' }}>
-                      <i className="fa-regular fa-copy" style={{ fontSize: '14px' }}></i>
-                    </span>
-                  )}
+                <div className="account-details">
+                  <div className="bank-info">
+                    <span className="bank-name">{weddingData.bride.bank}</span>
+                    <span className="account-num">{weddingData.bride.account}</span>
+                  </div>
+                  <button 
+                    className="btn-copy-account"
+                    onClick={() => handleCopyAccount(weddingData.bride.bank, weddingData.bride.account, 'bride')}
+                  >
+                    {copiedAccount === 'bride' ? (
+                      <>
+                        <i className="fa-solid fa-check" style={{ color: 'var(--wedding-accent)', marginRight: '5px' }}></i>
+                        복사완료
+                      </>
+                    ) : (
+                      <>
+                        <i className="fa-regular fa-copy" style={{ marginRight: '5px' }}></i>
+                        계좌복사
+                      </>
+                    )}
+                  </button>
                 </div>
               </div>
-              <div className="account-details">
-                <div className="bank-info">
-                  <span className="bank-name">{weddingData.bride.bank}</span>
-                  <span className="account-num">{weddingData.bride.account}</span>
-                </div>
-                <button 
-                  className="btn-copy-account"
-                  onClick={() => {
-                    navigator.clipboard.writeText(`${weddingData.bride.bank} ${weddingData.bride.account}`);
-                    setCopiedAccount('bride');
-                    setTimeout(() => setCopiedAccount(null), 2500);
-                  }}
-                >
-                  {copiedAccount === 'bride' ? (
-                    <>
-                      <i className="fa-solid fa-check" style={{ color: 'var(--wedding-accent)', marginRight: '5px' }}></i>
-                      복사완료
-                    </>
-                  ) : (
-                    <>
-                      <i className="fa-regular fa-copy" style={{ marginRight: '5px' }}></i>
-                      계좌복사
-                    </>
-                  )}
-                </button>
-              </div>
+
+              {/* 신부측 부모님 계좌 */}
+              {weddingData.bride.parents.map((parent, idx) => {
+                const id = `bride_parent_${idx}`;
+                return (
+                  <div key={idx} className="account-person" style={{ paddingTop: '16px', borderTop: '1px dashed #EAE6DF' }}>
+                    <div className="account-header">
+                      <div className="account-title-row">
+                        <span className="account-tag bride-tag">{parent.relation}</span>
+                        <strong className="account-name">{parent.name}</strong>
+                      </div>
+                      <div 
+                        className="phone-badge" 
+                        onClick={() => handleCopyPhone(parent.phone, id)}
+                        title="터치하여 전화번호 복사"
+                      >
+                        <span style={{ fontFamily: 'Pretendard, sans-serif', letterSpacing: '0.5px' }}>{parent.phone}</span>
+                        {copiedPhone === id ? (
+                          <span className="copied-inline" style={{ marginLeft: '6px', color: 'var(--wedding-accent)', display: 'inline-flex', alignItems: 'center' }}>
+                            <i className="fa-solid fa-check check-ani" style={{ fontSize: '14px' }}></i>
+                          </span>
+                        ) : (
+                          <span className="copy-icon-btn" style={{ marginLeft: '6px' }}>
+                            <i className="fa-regular fa-copy" style={{ fontSize: '14px' }}></i>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="account-details">
+                      <div className="bank-info">
+                        <span className="bank-name">{parent.bank}</span>
+                        <span className="account-num">{parent.account}</span>
+                      </div>
+                      <button 
+                        className="btn-copy-account"
+                        onClick={() => handleCopyAccount(parent.bank, parent.account, id)}
+                      >
+                        {copiedAccount === id ? (
+                          <>
+                            <i className="fa-solid fa-check" style={{ color: 'var(--wedding-accent)', marginRight: '5px' }}></i>
+                            복사완료
+                          </>
+                        ) : (
+                          <>
+                            <i className="fa-regular fa-copy" style={{ marginRight: '5px' }}></i>
+                            계좌복사
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -653,7 +722,14 @@ export default function App() {
           {/* 우상단 독립 닫기 버튼 */}
           <button 
             className="lightbox-close-btn"
-            onClick={() => setSelectedPhoto(null)}
+            onMouseDown={(e) => e.stopPropagation()}
+            onMouseUp={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedPhoto(null);
+            }}
             aria-label="닫기"
           >
             <i className="fa-solid fa-xmark"></i>
@@ -666,6 +742,7 @@ export default function App() {
             onTouchStart={(e) => {
               touchStartXRef.current = e.targetTouches[0].clientX;
               touchEndXRef.current = null;
+              setIsSlideTransitioning(false);
               if (sliderTrackRef.current) {
                 sliderTrackRef.current.style.transition = 'none';
               }
@@ -677,6 +754,7 @@ export default function App() {
             onMouseDown={(e) => {
               touchStartXRef.current = e.clientX;
               touchEndXRef.current = null;
+              setIsSlideTransitioning(false);
               if (sliderTrackRef.current) {
                 sliderTrackRef.current.style.transition = 'none';
               }
@@ -691,6 +769,7 @@ export default function App() {
               touchStartXRef.current = null;
               touchEndXRef.current = null;
               if (sliderTrackRef.current && selectedPhoto !== null) {
+                setIsSlideTransitioning(true);
                 sliderTrackRef.current.style.transform = `translate3d(-${selectedPhoto * 100}%, 0, 0)`;
                 sliderTrackRef.current.style.transition = 'transform 0.55s cubic-bezier(0.16, 1, 0.3, 1)';
               }
@@ -699,16 +778,27 @@ export default function App() {
             <div 
               ref={sliderTrackRef}
               className="lightbox-slider-track"
+              onTransitionEnd={() => {
+                if (selectedPhoto === 0) {
+                  // 첫번째 클론(마지막 사진)에 도착하면 실제 마지막 사진(인덱스 8)으로 애니메이션 없이 순간 이동
+                  setIsSlideTransitioning(false);
+                  setSelectedPhoto(galleryPhotos.length);
+                } else if (selectedPhoto === loopPhotos.length - 1) {
+                  // 마지막 클론(첫번째 사진)에 도착하면 실제 첫번째 사진(인덱스 1)으로 애니메이션 없이 순간 이동
+                  setIsSlideTransitioning(false);
+                  setSelectedPhoto(1);
+                }
+              }}
               style={{
                 transform: `translate3d(-${selectedPhoto * 100}%, 0, 0)`,
-                transition: 'transform 0.55s cubic-bezier(0.16, 1, 0.3, 1)'
+                transition: isSlideTransitioning ? 'transform 0.55s cubic-bezier(0.16, 1, 0.3, 1)' : 'none'
               }}
             >
-              {galleryPhotos.map((photoSrc, idx) => (
+              {loopPhotos.map((photoSrc, idx) => (
                 <div key={idx} className="lightbox-slide">
                   <img 
                     src={photoSrc} 
-                    alt={`웨딩 사진 ${idx + 1}`} 
+                    alt={`웨딩 사진 ${idx}`} 
                     className="lightbox-img"
                   />
                 </div>
@@ -718,10 +808,22 @@ export default function App() {
             {/* 좌우 사이드 플로팅 전환 버튼 (사진 수직 중간 배치) */}
             <button 
               className="lightbox-side-btn lightbox-side-prev"
+              onMouseDown={(e) => e.stopPropagation()}
+              onMouseUp={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
                 if (selectedPhoto !== null) {
-                  setSelectedPhoto((selectedPhoto - 1 + galleryPhotos.length) % galleryPhotos.length);
+                  setIsSlideTransitioning(true);
+                  if (sliderTrackRef.current) {
+                    sliderTrackRef.current.style.transition = 'transform 0.55s cubic-bezier(0.16, 1, 0.3, 1)';
+                  }
+                  if (selectedPhoto === 0) {
+                    setSelectedPhoto(galleryPhotos.length - 1);
+                  } else {
+                    setSelectedPhoto(selectedPhoto - 1);
+                  }
                 }
               }}
               aria-label="이전 사진"
@@ -730,10 +832,22 @@ export default function App() {
             </button>
             <button 
               className="lightbox-side-btn lightbox-side-next"
+              onMouseDown={(e) => e.stopPropagation()}
+              onMouseUp={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              onTouchEnd={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
                 if (selectedPhoto !== null) {
-                  setSelectedPhoto((selectedPhoto + 1) % galleryPhotos.length);
+                  setIsSlideTransitioning(true);
+                  if (sliderTrackRef.current) {
+                    sliderTrackRef.current.style.transition = 'transform 0.55s cubic-bezier(0.16, 1, 0.3, 1)';
+                  }
+                  if (selectedPhoto === loopPhotos.length - 1) {
+                    setSelectedPhoto(2);
+                  } else {
+                    setSelectedPhoto(selectedPhoto + 1);
+                  }
                 }
               }}
               aria-label="다음 사진"
