@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import './index.css';
 import { weddingData } from './data';
 import weddingMainImg from './assets/main.jpg';
+import mapCustomImg from './assets/map_custom.jpg';
 
 declare global {
   interface Window {
@@ -420,7 +421,7 @@ export default function App() {
             {/* 고해상도 정적 지도 캡처 이미지 (클릭 시 네이버 지도 이동) */}
             <div className="navi-map-wrapper">
               <a href={weddingData.location.mapUrl} target="_blank" rel="noopener noreferrer" className="static-map-link">
-                <img src="/map_capture.jpg" alt="오시는 길 지도" className="static-map-img" />
+                <img src={mapCustomImg} alt="오시는 길 지도" className="static-map-img" />
                 <div className="map-overlay-button">
                   <i className="fa-solid fa-map-location-dot"></i>
                   <span>네이버 지도로 길찾기</span>
