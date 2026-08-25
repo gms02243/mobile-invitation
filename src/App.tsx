@@ -263,8 +263,8 @@ export default function App() {
         <section className="section" style={{ backgroundColor: '#F8F6F0' }}>
           <h2 className="serif-title">초대합니다</h2>
           <p className="serif-text">
-            서로가 마주 보며 다진 약속을<br/>
-            함께 증명해 주시는 자리가 되었으면 합니다.<br/><br/>
+            두 사람이 함께한 순간들을 모아<br/>
+            이제는 서로의 미래로 가려고 합니다.<br/><br/>
             저희 두 사람의 새로운 출발선에<br/>
             소중한 분들을 모시고자 하오니<br/>
             부디 오셔서 축복해 주시면 감사하겠습니다.
